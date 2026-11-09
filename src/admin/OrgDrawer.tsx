@@ -5,7 +5,10 @@ import { clientName, invTotal } from '../shared/calc'
 import { fmtDate, fmtDateTime, money } from '../shared/format'
 import { SideDrawer, Tabs, Timeline } from '../tms/money/ui'
 import { balanceOf } from '../tms/money/calc'
+import { Button } from '@fluentui/react-components'
 import { orgMetrics, people } from './adminData'
+import type { Person } from './adminData'
+import { blockers } from './UserDialogs'
 import type { Data, Enrolment } from '../shared/types'
 import './admin.css'
 
@@ -17,7 +20,7 @@ const EnrolTable = ({ d, rows }: { d: Data; rows: Enrolment[] }) => rows.length 
   </tbody></table></div>
 )
 
-export default function OrgDrawer({ sel, onClose }: { sel: Selection; onClose: () => void }) {
+export default function OrgDrawer({ sel, onClose, onEdit, onRemove }: { sel: Selection; onClose: () => void; onEdit?: (p: Person) => void; onRemove?: (p: Person) => void }) {
   const d = useStore(s => s.data)
   const [tab, setTab] = useState('overview')
   const close = () => { setTab('overview'); onClose() }
@@ -86,6 +89,7 @@ export default function OrgDrawer({ sel, onClose }: { sel: Selection; onClose: (
             {isLearner && <><dt>Enrolments</dt><dd>{enrols.length}</dd><dt>Certificates</dt><dd>{certs.length}</dd></>}
             {sessionsTaught.length > 0 && <><dt>Sessions assigned</dt><dd>{sessionsTaught.length}</dd></>}
             {p.source === 'recruiter' && <><dt>Introduction requests</dt><dd>{intros.length}</dd></>}</dl>
+          {(onEdit || onRemove) && <div className="row" style={{ margin: '12px 0' }}>{onEdit && <Button onClick={() => onEdit(p)}>Edit user</Button>}{onRemove && <Button appearance="subtle" onClick={() => onRemove(p)}>{blockers(d, p).length ? 'Remove user…' : 'Remove user'}</Button>}</div>}
           {p.source === 'recruiter' && <div className="callout">Recruiters only ever see anonymised, opted-in, self-paid profiles. Contact details are released after a learner approves an introduction.</div>}
           {p.source === 'learner' && p.kind === 'B2B learner' && <div className="callout">Employer-paid learner: invoiced to {p.org}, never visible to recruiters.</div>}
         </>

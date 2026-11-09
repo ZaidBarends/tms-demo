@@ -9,6 +9,7 @@ import { downloadCsv } from '../tms/money/actions'
 import { Tabs } from '../tms/money/ui'
 import { orgMetrics, people } from './adminData'
 import type { PersonKind } from './adminData'
+import { UserDialog, RemoveUserDialog } from './UserDialogs'
 import OrgDrawer from './OrgDrawer'
 import type { Selection } from './OrgDrawer'
 import './admin.css'
@@ -21,6 +22,8 @@ export default function Orgs() {
   const [q, setQ] = useState(''); const [sector, setSector] = useState(''); const [kind, setKind] = useState(''); const [org, setOrg] = useState('')
   const [sel, setSel] = useState<Selection>(null)
   const [flash, setFlash] = useState('')
+  const [dlg, setDlg] = useState<{ person: import('./adminData').Person | null } | null>(null)
+  const [removing, setRemoving] = useState<import('./adminData').Person | null>(null)
   const needle = q.trim().toLowerCase()
 
   const orgs = useMemo(() => d.orgs.filter(o => (!sector || o.sector === sector) && (!needle || `${o.name} ${o.sector} ${o.city}`.toLowerCase().includes(needle))), [d, sector, needle])
@@ -40,7 +43,7 @@ export default function Orgs() {
 
   return (
     <>
-      <PageHeader id="orgs" title="Organisations and users" subtitle="Clients, their contacts and learners, internal staff and recruiters" actions={<Button onClick={exportCsv}>Export CSV</Button>} />
+      <PageHeader id="orgs" title="Organisations and users" subtitle="Clients, their contacts and learners, internal staff and recruiters" actions={<><Button onClick={exportCsv}>Export CSV</Button><Button appearance="primary" onClick={() => setDlg({ person: null })}>Add user</Button></>} />
       <Tabs tabs={[{ id: 'orgs', label: `Organisations (${d.orgs.length})` }, { id: 'people', label: `People (${all.length})` }]} value={tab} onChange={t => { setTab(t); setFlash('') }} />
       <Card>
         <div className="mny-filters" style={{ marginBottom: 0 }}>
@@ -85,7 +88,9 @@ export default function Orgs() {
           )}
         </Card>
       )}
-      <OrgDrawer sel={sel} onClose={() => setSel(null)} />
+      <OrgDrawer sel={sel} onClose={() => setSel(null)} onEdit={p => { setSel(null); setDlg({ person: p }) }} onRemove={p => { setSel(null); setRemoving(p) }} />
+      <UserDialog open={!!dlg} person={dlg?.person ?? null} onClose={() => setDlg(null)} onSaved={(msg, key) => { setFlash(msg); if (!dlg?.person) { setTab('people'); setKind(''); setOrg(''); setQ(''); setSel({ kind: 'person', id: key }) } }} />
+      <RemoveUserDialog person={removing} onClose={() => setRemoving(null)} onRemoved={m => setFlash(m)} />
     </>
   )
 }

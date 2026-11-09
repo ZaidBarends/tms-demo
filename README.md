@@ -44,7 +44,7 @@ npm test           # unit, ringfencing and render-every-screen tests
 - **B2B client portal**: dashboard, bookings with a request wizard (booking and quote requests land in staff Opportunities as "Client portal" enquiries with a follow-up task, and the client sees the staff stage: moving it to Won shows Confirmed), learners with bulk CSV paste, compliance matrix (staff x mandatory certificates), statements and invoices.
 - **B2C and LMS**: faceted catalogue with compare, wishlist and reviews; four-step checkout with coupons (WELCOME10, DEMO15, STUDENT5); bookings calendar and receipts; academies, mentoring, certifications (R2); a full course player (outline, slides, video mock, notes, timed quiz, printable certificate); skills radar, journeys, achievements, learning admin with compliance matrix.
 - **Talent (R3)**: opt-in with granular visibility, recruiter search with match scoring against job briefs, compare and shortlist, introduction threads, consent history, recruiter approvals, audit log, ringfencing check and ROI report.
-- **Administration**: organisations and people directory with 360 view, audit trail, settings, access rules with a role simulator, Demo map.
+- **Administration**: organisations and people directory with 360 view and add, edit and remove user (removal is blocked while a user has linked records), audit trail, settings, access rules with a role simulator, Demo map.
 
 ## Code layout
 
