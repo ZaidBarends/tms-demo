@@ -1,0 +1,5 @@
+node_modules
+dist
+node-v*-win-x64/
+.claude/
+*.log

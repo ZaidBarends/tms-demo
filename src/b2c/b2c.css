@@ -1,0 +1,101 @@
+/* Catalogue, checkout and B2C learner services. Classes are prefixed b2c-. */
+@import '../lms/lms.css';
+.b2c-cat { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; align-items: start; }
+.b2c-facets { display: grid; gap: 14px; position: sticky; top: 100px; margin-bottom: 0; max-height: calc(100vh - 120px); overflow-y: auto; }
+.b2c-facets fieldset { border: none; padding: 0; margin: 0; }
+.b2c-facets legend { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.b2c-toolbar { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.b2c-card { display: flex; flex-direction: column; gap: 8px; margin-bottom: 0; }
+.b2c-card .card-title a { color: inherit; text-decoration: none; }
+.b2c-card .card-title a:hover { text-decoration: underline; }
+.b2c-desc { margin: 0; min-height: 66px; font-size: 13px; }
+.b2c-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-top: auto; }
+.b2c-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.b2c-tag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: var(--brandsoft); }
+.b2c-tag.hot { background: #fde1cf; color: #8a3a00; }
+.b2c-tag.new { background: #dff3e6; color: #0b5a2b; }
+:root[data-theme='dark'] .b2c-tag.hot { background: #5a2f10; color: #ffd9bd; }
+:root[data-theme='dark'] .b2c-tag.new { background: #14502a; color: #d2f3dc; }
+.b2c-rows { display: grid; }
+.b2c-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.b2c-row:last-child { border-bottom: none; }
+.b2c-row .card-title a { color: inherit; text-decoration: none; }
+.b2c-tray { position: sticky; bottom: 12px; z-index: 12; background: var(--card); border: 1px solid #0f6cbd; border-radius: 12px; padding: 10px 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(0, 0, 0, .18); margin-top: 16px; }
+.b2c-compare td, .b2c-compare th { vertical-align: top; }
+.b2c-input { font: inherit; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: inherit; min-width: 0; flex: 1; }
+
+/* course page */
+.b2c-detail { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+.b2c-sticky { position: sticky; top: 100px; margin-bottom: 0; }
+.b2c-ticks { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; }
+.b2c-ticks li { padding-left: 24px; position: relative; }
+.b2c-ticks li::before { content: '✓'; position: absolute; left: 0; color: #13a10e; font-weight: 700; }
+.b2c-reviews-head { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.b2c-hist { flex: 1; min-width: 220px; display: grid; gap: 6px; }
+.b2c-hist > div { display: grid; grid-template-columns: 50px 1fr 24px; gap: 8px; align-items: center; font-size: 12px; }
+.b2c-review { border-top: 1px solid var(--line); padding: 10px 0; }
+.b2c-related { border: 1px solid var(--line); border-radius: 10px; padding: 12px; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 4px; }
+.b2c-related:hover { border-color: #0f6cbd; }
+
+/* checkout */
+.b2c-proc { background: var(--brandsoft); border-radius: 8px; padding: 12px 14px; }
+.b2c-next { padding-left: 18px; line-height: 1.8; }
+
+/* my bookings */
+.b2c-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.b2c-cal .h { background: var(--brandsoft); text-align: center; font-weight: 600; font-size: 12px; padding: 6px; }
+.b2c-cal button { background: var(--card); color: inherit; border: none; min-height: 78px; padding: 4px 6px; text-align: left; font: inherit; font-size: 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.b2c-cal button.out { opacity: .45; }
+.b2c-cal button.today span { background: #0f6cbd; color: #fff; border-radius: 10px; padding: 0 6px; align-self: flex-start; }
+.b2c-cal button.sel { outline: 2px solid #0f6cbd; outline-offset: -2px; }
+.b2c-cal button:hover { background: var(--brandsoft); }
+.b2c-cal i { font-style: normal; background: #cfe3f8; color: #0b3a66; border-radius: 4px; padding: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b2c-cal i.done { background: #c8ecd2; color: #0b3d1c; }
+:root[data-theme='dark'] .b2c-cal i { background: #1d3a5c; color: #cfe3f8; }
+:root[data-theme='dark'] .b2c-cal i.done { background: #14502a; color: #d2f3dc; }
+.b2c-day { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.b2c-bk > div { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.b2c-bk > div:last-child { border-bottom: none; }
+
+/* academies */
+.b2c-acad { display: flex; flex-direction: column; gap: 8px; }
+.b2c-acad-head { background: linear-gradient(135deg, #0b3a66, #0f6cbd); color: #fff; margin: -18px -20px 6px; padding: 16px 20px; border-radius: 12px 12px 0 0; }
+.b2c-acad-head h2 { margin: 2px 0 0; font-size: 18px; }
+.b2c-timeline { list-style: none; margin: 0 0 12px; padding: 0 0 0 18px; border-left: 3px solid var(--line); display: grid; gap: 14px; }
+.b2c-timeline li { position: relative; }
+.b2c-timeline li::before { content: ''; position: absolute; left: -26px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #0f6cbd; }
+
+/* mentoring */
+.b2c-slots { border-collapse: separate; border-spacing: 4px; width: 100%; font-size: 12px; }
+.b2c-slots th { font-weight: 600; padding: 4px; text-align: center; }
+.b2c-slots button { width: 100%; padding: 8px 4px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: inherit; font: inherit; cursor: pointer; }
+.b2c-slots button:hover:not(:disabled) { border-color: #0f6cbd; background: var(--brandsoft); }
+.b2c-slots button:disabled { opacity: .4; cursor: not-allowed; }
+.b2c-slots button.sel { background: #0f6cbd; color: #fff; border-color: #0f6cbd; }
+.b2c-sessions { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.b2c-session { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+
+/* certifications */
+.b2c-tl { position: relative; height: 150px; margin: 8px 12px 0; }
+.b2c-tl-axis { position: absolute; left: 0; right: 0; top: 18px; height: 4px; background: var(--line); border-radius: 2px; }
+.b2c-tl-today { position: absolute; top: 4px; bottom: 0; border-left: 2px dashed #f7630c; }
+.b2c-tl-today span { position: absolute; top: -4px; left: 6px; font-size: 11px; color: #f7630c; font-weight: 700; }
+.b2c-tl-tick { position: absolute; top: 24px; font-size: 11px; color: var(--muted); }
+.b2c-tl-pin { position: absolute; transform: translateX(-6px); font-size: 12px; white-space: nowrap; display: flex; align-items: center; gap: 6px; max-width: 46%; }
+.b2c-tl-pin i { width: 12px; height: 12px; border-radius: 50%; background: #13a10e; flex-shrink: 0; }
+.b2c-tl-pin.warn i { background: #f7630c; } .b2c-tl-pin.bad i { background: #d13438; }
+.b2c-tl-pin span { overflow: hidden; text-overflow: ellipsis; }
+.b2c-certs { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.b2c-certcard { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.b2c-li { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+.b2c-li-band { height: 64px; background: linear-gradient(120deg, #0b3a66, #2b9bd8); }
+.b2c-li-body { padding: 0 16px 16px; display: grid; gap: 4px; justify-items: start; }
+.b2c-li-av { width: 64px; height: 64px; border-radius: 50%; background: #8764b8; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 22px; margin-top: -32px; border: 3px solid var(--card); }
+.b2c-li-cert { display: flex; gap: 12px; align-items: center; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 10px 0; margin: 8px 0; width: 100%; }
+.b2c-badgegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+
+@media (max-width: 980px) {
+  .b2c-cat, .b2c-detail { grid-template-columns: 1fr; }
+  .b2c-facets, .b2c-sticky { position: static; max-height: none; }
+  .b2c-sticky { order: -1; }
+}

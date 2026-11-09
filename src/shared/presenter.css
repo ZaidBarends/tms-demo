@@ -1,0 +1,47 @@
+/* Shell polish, tour, command palette, notifications */
+.nav-label { display: inline-flex; align-items: center; gap: 10px; }
+.nav-ico { display: inline-flex; font-size: 18px; opacity: .8; }
+.nav-item.active .nav-ico { opacity: 1; }
+.nav-btn { width: 100%; background: none; border: none; font: inherit; cursor: pointer; text-align: left; }
+.dot-role { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; }
+.search-btn { min-width: 190px; justify-content: space-between; }
+.search-btn kbd, kbd { font-family: inherit; font-size: 11px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--page); color: var(--muted); }
+.search-text { color: var(--muted); margin-right: 14px; }
+.page-in { animation: pageIn .22s ease-out; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .page-in { animation: none; } }
+.card { transition: box-shadow .15s, border-color .15s; }
+.card:hover { box-shadow: 0 4px 16px rgba(15, 40, 80, .08); }
+.stat { transition: transform .15s, box-shadow .15s; }
+.stat:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(15, 40, 80, .08); }
+.avatar.sm { width: 22px; height: 22px; font-size: 12px; display: inline-grid; margin-right: 8px; }
+
+.tour-panel { position: fixed; right: 20px; bottom: 20px; width: 340px; max-width: calc(100vw - 32px); z-index: 60; background: var(--card); border: 1px solid #0f6cbd; border-radius: 14px; box-shadow: 0 12px 36px rgba(0, 30, 70, .28); padding: 14px 16px; animation: pageIn .2s ease-out; }
+.tour-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.tour-who { font-size: 13px; display: flex; align-items: center; margin-bottom: 4px; color: var(--muted); }
+.tour-title { margin: 4px 0; font-size: 17px; }
+.tour-dots { display: flex; gap: 5px; margin: 10px 0; }
+.tour-dots span { width: 22px; height: 5px; border-radius: 3px; background: var(--line); }
+.tour-dots span.on { background: #0f6cbd; }
+.tour-dots span.done { background: #8ab8e3; }
+.tour-list { display: grid; gap: 10px; }
+.tour-card { display: flex; gap: 14px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--card); color: inherit; font: inherit; padding: 12px 14px; border-radius: 12px; cursor: pointer; }
+.tour-card:hover { border-color: #0f6cbd; background: var(--brandsoft); }
+.tour-play { width: 38px; height: 38px; border-radius: 50%; background: #0f6cbd; color: #fff; display: grid; place-items: center; flex-shrink: 0; font-size: 18px; }
+
+.cmd-list { margin-top: 10px; max-height: 360px; overflow-y: auto; }
+.cmd-item { display: flex; justify-content: space-between; gap: 12px; padding: 9px 12px; border-radius: 8px; cursor: pointer; }
+.cmd-item.sel { background: var(--brandsoft); }
+
+.note-item { display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid var(--line); padding: 10px 14px; font: inherit; color: inherit; cursor: pointer; }
+.note-item:hover { background: var(--brandsoft); }
+.dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+.dot.danger { background: #c50f1f; } .dot.warning { background: #f7630c; } .dot.info { background: #0f6cbd; } .dot.success { background: #13a10e; }
+
+.map-filters { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+.map-stat { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.cov { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.cov > div { height: 100%; background: #13a10e; }
+
+@media (max-width: 1180px) { .search-btn { min-width: 0; } .search-text, .search-btn kbd { display: none; } .brand-name { display: none; } }
+@media (max-width: 760px) { .tour-panel { left: 16px; right: 16px; width: auto; } }
