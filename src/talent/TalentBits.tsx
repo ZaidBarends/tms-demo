@@ -5,7 +5,7 @@ import { useTalent } from './talentStore'
 import { buildCandidates, Candidate, CATEGORIES, MatchResult } from './talentLogic'
 import './talent.css'
 
-export const PALETTE = ['#0f6cbd', '#2b9bd8', '#13a10e', '#f7630c', '#8764b8', '#c4c9cf']
+export const PALETTE = ['#597f2d', '#92ca61', '#13a10e', '#f7630c', '#8764b8', '#c4c9cf']
 
 export function useCandidates(): Candidate[] {
   const d = useStore(s => s.data)
@@ -14,7 +14,7 @@ export function useCandidates(): Candidate[] {
 }
 
 export function MatchBar({ score }: { score: number }) {
-  const color = score >= 75 ? '#13a10e' : score >= 40 ? '#0f6cbd' : '#f7630c'
+  const color = score >= 75 ? '#13a10e' : score >= 40 ? '#597f2d' : '#f7630c'
   return (
     <div className="tal-score" role="img" aria-label={`Match score ${score} out of 100`}>
       <div className="tal-score-bar"><div style={{ width: `${score}%`, background: color }} /></div>

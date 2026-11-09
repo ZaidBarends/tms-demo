@@ -126,7 +126,7 @@ export function buildResources(c: Course): Resource[] {
     { name: `${c.code} learner workbook.pdf`, kind: 'PDF', size: '1.4 MB', text: `${c.title}\n\nLearner workbook\n\n${c.description}\n\nSkills: ${c.skills.join(', ')}\n` },
     { name: `${c.code} quick-reference checklist.txt`, kind: 'Checklist', size: '48 KB', text: `Quick reference: ${c.title}\n\n${tips(c).map((t, i) => `${i + 1}. ${t}`).join('\n')}\n` },
     { name: `${c.code} action plan template.txt`, kind: 'Template', size: '22 KB', text: `Action plan\n\nSituation:\nWhat I will do differently:\nWho will give me feedback:\nReview date:\n` },
-    { name: 'Further reading and links.txt', kind: 'Link', size: '6 KB', text: 'Further reading (demo)\n\nhttps://library.trainco.example/guides\nhttps://library.trainco.example/case-studies\n' },
+    { name: 'Further reading and links.txt', kind: 'Link', size: '6 KB', text: 'Further reading (demo)\n\nhttps://library.zimele.example/guides\nhttps://library.zimele.example/case-studies\n' },
   ]
 }
 

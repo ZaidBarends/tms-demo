@@ -89,7 +89,7 @@ function ShareModal({ cert, onClose, name, course }: { cert: Certificate | null;
           <div className="small muted">Licences and certifications</div>
           <div className="b2c-li-cert">
             <QrBlock code={cert.id} size={56} />
-            <div><b>{course}</b><div className="small">TrainCo Learning Academy</div><div className="small muted">Issued {fmtDate(cert.issued)}{cert.expires ? ` · Expires ${fmtDate(cert.expires)}` : ''}</div><div className="small muted">Credential ID {cert.id} · Code {verifyCode(cert.id)}</div></div>
+            <div><b>{course}</b><div className="small">Zimele Academy</div><div className="small muted">Issued {fmtDate(cert.issued)}{cert.expires ? ` · Expires ${fmtDate(cert.expires)}` : ''}</div><div className="small muted">Credential ID {cert.id} · Code {verifyCode(cert.id)}</div></div>
           </div>
           <Button size="small" appearance={added ? 'secondary' : 'primary'} onClick={() => setAdded(true)}>{added ? 'Added to profile (preview)' : 'Add to profile'}</Button>
         </div>

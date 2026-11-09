@@ -71,10 +71,10 @@ export default function MyLearning() {
                 <div className="small" style={{ opacity: .9 }}>Lesson {li + 1} of {lessons.length}: {lessons[li]?.title} · about {minsLeft} min left</div>
                 <div className="small" style={{ opacity: .8 }}>Paid by {payerLabel(resume.payer)}{resume.deadline ? ` · due ${fmtDate(resume.deadline)}` : ''}</div>
               </div>
-              <Link to={`/learn/${resume.id}`}><Button appearance="primary" size="large" style={{ background: '#fff', color: '#0b3a66' }}>{resume.progress > 0 ? 'Continue' : 'Start'}</Button></Link>
+              <Link to={`/learn/${resume.id}`}><Button appearance="primary" size="large" style={{ background: '#fff', color: '#2c3d1d' }}>{resume.progress > 0 ? 'Continue' : 'Start'}</Button></Link>
             </div>
           ) : (
-            <div className="lms-resume"><div style={{ flex: 1 }}><b>Nothing in progress</b><div className="small">Pick a course to get started.</div></div><Link to="/catalogue"><Button appearance="primary" style={{ background: '#fff', color: '#0b3a66' }}>Browse the catalogue</Button></Link></div>
+            <div className="lms-resume"><div style={{ flex: 1 }}><b>Nothing in progress</b><div className="small">Pick a course to get started.</div></div><Link to="/catalogue"><Button appearance="primary" style={{ background: '#fff', color: '#2c3d1d' }}>Browse the catalogue</Button></Link></div>
           )}
         </section>
         <StreakGoalCard streak={s.streak} longest={s.longest} days={s.days} week={s.week} goal={s.goal} setGoal={m => setGoal(learnerId, m)} />

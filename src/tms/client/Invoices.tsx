@@ -13,7 +13,7 @@ import { aging, ledger } from './clientLogic'
 import './client.css'
 
 const REASONS = ['Amount is incorrect', 'Learner did not attend', 'Duplicate invoice', 'Service not delivered as quoted', 'Other']
-const COLORS = ['#13a10e', '#2b9bd8', '#f7630c', '#c50f1f', '#8a1a10']
+const COLORS = ['#13a10e', '#92ca61', '#f7630c', '#c50f1f', '#8a1a10']
 
 export function ClientInvoices() {
   const d = useStore(s => s.data)

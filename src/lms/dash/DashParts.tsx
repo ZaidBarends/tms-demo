@@ -20,7 +20,7 @@ export function StreakGoalCard({ streak, longest, days, week, goal, setGoal }: {
           <Fire24Regular style={{ color: '#f7630c', width: 34, height: 34 }} />
           <div><b className="lms-big">{streak}</b><span className="muted small"> day streak</span><div className="muted small">Best: {longest} days</div></div>
         </div>
-        <Ring value={(week / goal) * 100} size={92} stroke={10} color={week >= goal ? '#13a10e' : '#0f6cbd'} label={`${week}`} sub={`of ${goal} min`} />
+        <Ring value={(week / goal) * 100} size={92} stroke={10} color={week >= goal ? '#13a10e' : '#597f2d'} label={`${week}`} sub={`of ${goal} min`} />
       </div>
       <div className="lms-week" aria-label="Last seven days">
         {days.map(x => <div key={x.date} className={x.mins > 0 ? 'on' : ''} title={`${fmtShort(x.date)}: ${x.mins} min`}><span>{x.mins > 0 ? <Checkmark16Filled /> : ''}</span><small>{x.label}</small></div>)}
@@ -35,7 +35,7 @@ export function StreakGoalCard({ streak, longest, days, week, goal, setGoal }: {
   )
 }
 
-const COLORS = { Completed: '#13a10e', 'In progress': '#0f6cbd', 'Not started': '#c4c9cf' }
+const COLORS = { Completed: '#13a10e', 'In progress': '#597f2d', 'Not started': '#c4c9cf' }
 export function ProgressDonut({ es }: { es: Enrolment[] }) {
   const data = [
     { name: 'Completed', value: es.filter(e => e.status === 'Completed').length },
@@ -70,7 +70,7 @@ export function WeeklyBars({ days, goal }: { days: { label: string; mins: number
             <XAxis dataKey="label" tickLine={false} fontSize={12} /><YAxis allowDecimals={false} fontSize={12} />
             <Tooltip formatter={(v: number) => [`${v} min`, 'Learning']} />
             <ReferenceLine y={Math.round(goal / 7)} stroke="#f7630c" strokeDasharray="4 4" label={{ value: 'daily target', fontSize: 11, fill: '#f7630c', position: 'insideTopRight' }} />
-            <Bar dataKey="mins" fill="#0f6cbd" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="mins" fill="#597f2d" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

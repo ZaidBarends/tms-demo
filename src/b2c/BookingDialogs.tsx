@@ -68,7 +68,7 @@ export function DocModal({ receipt, kind, onClose, name, company }: { receipt: R
       <div className="doc lms-print">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div><h2>{kind}</h2><div>No. {receipt.id}{kind === 'Tax invoice' ? ` · Order ${order?.ref ?? '–'}` : ''}</div><div>Date {fmtDate(receipt.date)}</div></div>
-          <div style={{ textAlign: 'right' }}><b>TrainCo Learning (Pty) Ltd</b><div>14 Harbour Road, Cape Town, 8001</div><div>VAT no. 4123456789 · Reg. 2015/123456/07</div></div>
+          <div style={{ textAlign: 'right' }}><b>Zimele Technologies (Pty) Ltd</b><div>Building 11, Stanford Office Park, 12 Bauhinia Street, Highveld, Centurion, 0169</div><div>VAT no. 4123456789 · Reg. 2015/123456/07</div></div>
         </div>
         <p><b>Billed to</b><br />{name}{company ? <><br />{company}</> : null}</p>
         <table><thead><tr><th>Description</th><th className="num">Amount</th></tr></thead><tbody>

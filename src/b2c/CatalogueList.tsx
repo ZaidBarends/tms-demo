@@ -82,7 +82,7 @@ export default function CatalogueList() {
           <fieldset><legend>Format</legend>{['Classroom', 'Online', 'Blended'].map(l => <div key={l}><Checkbox label={`${l} (${count(x => meta[x.id].format === l)})`} checked={formats.includes(l)} onChange={() => tog(formats, setFormats, l)} /></div>)}</fieldset>
           <div>
             <label htmlFor="b2c-price"><b className="small">Maximum price (ex VAT): {maxPrice >= 15000 ? 'any' : money(maxPrice)}</b></label>
-            <input id="b2c-price" type="range" min={1500} max={15000} step={500} value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} style={{ width: '100%', accentColor: '#0f6cbd' }} />
+            <input id="b2c-price" type="range" min={1500} max={15000} step={500} value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} style={{ width: '100%', accentColor: '#597f2d' }} />
           </div>
           <FSelect label="Minimum rating" value={minRating} onChange={setMinRating} placeholder="Any rating" options={[{ value: '4.5', label: '4.5 and up' }, { value: '4', label: '4 and up' }, { value: '3.5', label: '3.5 and up' }]} />
           <Switch label="Soft skills only" checked={soft} onChange={(_, x) => setSoft(x.checked)} />

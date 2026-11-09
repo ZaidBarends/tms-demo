@@ -16,7 +16,7 @@ import { downloadCsv } from './download'
 import './ops.css'
 
 type Tabs = 'overview' | 'curriculum' | 'pricing' | 'sessions' | 'learners' | 'revenue'
-const PALETTE = ['#0f6cbd', '#2b9bd8', '#13a10e', '#f7630c', '#8764b8', '#c4c9cf']
+const PALETTE = ['#597f2d', '#92ca61', '#13a10e', '#f7630c', '#8764b8', '#c4c9cf']
 
 export default function CourseDetail() {
   const { id } = useParams()
@@ -82,7 +82,7 @@ export default function CourseDetail() {
               <div className="ops-chart" role="img" aria-label="Booked and free seats per session">
                 <ResponsiveContainer><BarChart data={util} margin={{ left: -15 }}>
                   <CartesianGrid stroke="#8884" strokeDasharray="3 3" vertical={false} /><XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis allowDecimals={false} tick={{ fontSize: 11 }} /><Tooltip /><Legend />
-                  <Bar dataKey="booked" name="Booked" stackId="a" fill="#0f6cbd" /><Bar dataKey="free" name="Free" stackId="a" fill="#c4c9cf" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="booked" name="Booked" stackId="a" fill="#597f2d" /><Bar dataKey="free" name="Free" stackId="a" fill="#c4c9cf" radius={[4, 4, 0, 0]} />
                 </BarChart></ResponsiveContainer>
               </div>
             )}

@@ -75,7 +75,7 @@ export function JourneyAdminPanel({ onAssign }: { onAssign: (j: Journey) => void
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={funnel} margin={{ left: -16 }}>
               <CartesianGrid stroke="#8884" vertical={false} /><XAxis dataKey="name" fontSize={10} interval={0} angle={-30} textAnchor="end" height={70} /><YAxis allowDecimals={false} fontSize={12} />
-              <Tooltip /><Bar dataKey="Completed" stackId="a" fill="#13a10e" /><Bar dataKey="Enrolled" stackId="a" fill="#2b9bd8" radius={[4, 4, 0, 0]} />
+              <Tooltip /><Bar dataKey="Completed" stackId="a" fill="#13a10e" /><Bar dataKey="Enrolled" stackId="a" fill="#92ca61" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

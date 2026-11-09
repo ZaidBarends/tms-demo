@@ -4,7 +4,7 @@ import { fmtDate } from '../shared/format'
 import { hashOf } from './gamify'
 import './lms.css'
 
-export const verifyUrl = (id: string) => `https://credentials.trainco.example/verify/${id}`
+export const verifyUrl = (id: string) => `https://credentials.zimele.example/verify/${id}`
 export const verifyCode = (id: string) => { const h = hashOf(id).toString(36).toUpperCase().padStart(8, '0').slice(0, 8); return `${h.slice(0, 4)}-${h.slice(4)}` }
 
 /** Print the element(s) marked .lms-print. Everything else is hidden by the print stylesheet. */
@@ -33,7 +33,7 @@ export function QrBlock({ code, size = 96 }: { code: string; size?: number }) {
   )
   return (
     <svg width={size} height={size} viewBox={`-1 -1 ${n + 2} ${n + 2}`} role="img" aria-label={`Verification code ${verifyCode(code)}`} shapeRendering="crispEdges" style={{ background: '#fff', borderRadius: 4 }}>
-      <g fill="#0b3a66">{cells}{eye(0, 0)}{eye(n - 7, 0)}{eye(0, n - 7)}</g>
+      <g fill="#2c3d1d">{cells}{eye(0, 0)}{eye(n - 7, 0)}{eye(0, n - 7)}</g>
     </svg>
   )
 }
@@ -45,10 +45,10 @@ export function CertificateDoc({ name, course, id, issued, expires, score, hours
     <div className="lms-cert lms-print" role="region" aria-label={`Certificate ${id}`}>
       <div className="lms-cert-inner">
         <svg className="lms-cert-seal" width="84" height="84" viewBox="0 0 84 84" aria-hidden>
-          <circle cx="42" cy="42" r="38" fill="#0f6cbd" /><circle cx="42" cy="42" r="31" fill="none" stroke="#fff" strokeWidth="1.5" strokeDasharray="3 3" />
+          <circle cx="42" cy="42" r="38" fill="#597f2d" /><circle cx="42" cy="42" r="31" fill="none" stroke="#fff" strokeWidth="1.5" strokeDasharray="3 3" />
           <path d="M42 22l5.5 11.5 12.5 1.6-9.2 8.6 2.4 12.4L42 49.8 30.8 56l2.4-12.4L24 35l12.5-1.5z" fill="#fff" />
         </svg>
-        <div className="lms-cert-kicker">TrainCo Learning Academy</div>
+        <div className="lms-cert-kicker">Zimele Academy</div>
         <h2 className="lms-cert-title">Certificate of completion</h2>
         <div className="lms-cert-sub">This is to certify that</div>
         <div className="lms-cert-name">{name}</div>

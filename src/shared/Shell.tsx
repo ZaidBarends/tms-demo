@@ -1,3 +1,4 @@
+import logoUrl from '../assets/zimele-logo.png'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
@@ -11,7 +12,7 @@ import { ReleaseBadge } from './ui'
 import { navIcon } from './navIcons'
 import { Bell, CommandPalette, TourMenu, TourPanel, Welcome, useTour } from './presenter'
 
-const ROLE_COLOR: Record<string, string> = { admin: '#0f6cbd', finance: '#107c10', instructor: '#8764b8', internal: '#0e7a8a', client: '#c239b3', blearner: '#ca5010', b2c: '#0078d4', recruiter: '#986f0b', all: '#444' }
+const ROLE_COLOR: Record<string, string> = { admin: '#597f2d', finance: '#0f6cbd', instructor: '#8764b8', internal: '#0e7a8a', client: '#c239b3', blearner: '#ca5010', b2c: '#0078d4', recruiter: '#986f0b', all: '#444' }
 
 export default function Shell() {
   const { persona, setPersona, explainer, toggleExplainer, dark, toggleDark, reset, notice, setNotice } = useStore()
@@ -46,7 +47,7 @@ export default function Shell() {
       <div className="ribbon" role="note">Demo with invented data</div>
       <header className="topbar">
         <Button className="nav-toggle" appearance="subtle" icon={<NavigationRegular />} aria-label="Toggle navigation" onClick={() => setNavOpen(o => !o)} />
-        <Link to={def.home} className="brand" aria-label="Home"><span className="logo" aria-hidden>T</span> <span className="brand-name">Training Platform</span></Link>
+        <Link to={def.home} className="brand" aria-label="Home"><img className="brand-logo" src={logoUrl} alt="Zimele Technologies" /> <span className="brand-name">Learning Platform</span></Link>
         <Button className="search-btn" appearance="outline" icon={<SearchRegular />} onClick={() => setPalette(true)} aria-label="Search and jump to anything (Ctrl K)">
           <span className="search-text">Jump to…</span><kbd>Ctrl K</kbd>
         </Button>

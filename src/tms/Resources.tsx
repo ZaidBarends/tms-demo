@@ -94,7 +94,7 @@ export default function Resources() {
             </Fragment>
           ))}
         </div></div>
-        <div className="ops-legend"><span><span className="ops-dot" style={{ background: '#dbeafe' }} />Booked</span><span><span className="ops-dot" style={{ background: '#fbd5d1' }} />Clash</span><span><span className="ops-dot" style={{ background: 'repeating-linear-gradient(45deg,#f3f6fa,#f3f6fa 2px,#dde3ea 2px,#dde3ea 4px)' }} />Instructor unavailable</span><span><span className="ops-dot" style={{ background: 'var(--card)', border: '1px solid var(--line)' }} />Free</span></div>
+        <div className="ops-legend"><span><span className="ops-dot" style={{ background: '#dbeafe' }} />Booked</span><span><span className="ops-dot" style={{ background: '#fbd5d1' }} />Clash</span><span><span className="ops-dot" style={{ background: 'repeating-linear-gradient(45deg,#f5f7f2,#f5f7f2 2px,#dfe5d9 2px,#dfe5d9 4px)' }} />Instructor unavailable</span><span><span className="ops-dot" style={{ background: 'var(--card)', border: '1px solid var(--line)' }} />Free</span></div>
       </Card>
 
       <div className="grid c3">

@@ -96,7 +96,7 @@ export function Welcome() {
     <Dialog open={open} onOpenChange={(_, d) => !d.open && close()}>
       <DialogSurface style={{ maxWidth: 620 }}>
         <DialogBody>
-          <DialogTitle>Welcome to the training platform demo</DialogTitle>
+          <DialogTitle>Welcome to the Zimele Technologies learning platform demo</DialogTitle>
           <DialogContent>
             <p>This is a clickable, frontend-only demo with invented data. Nothing is saved to a server.</p>
             <ul style={{ lineHeight: 1.8 }}>

@@ -13,9 +13,9 @@
 .cl-step { flex: 1; min-width: 90px; text-align: center; font-size: 12px; padding: 6px 4px; background: var(--line); color: var(--muted); }
 .cl-step:first-child { border-radius: 8px 0 0 8px; }
 .cl-step:last-child { border-radius: 0 8px 8px 0; }
-.cl-step.done { background: #bcd9f2; color: #0b3a66; }
-.cl-step.now { background: #0f6cbd; color: #fff; font-weight: 600; }
-:root[data-theme='dark'] .cl-step.done { background: #1d3a5c; color: #cfe3f8; }
+.cl-step.done { background: #bcd9f2; color: #2c3d1d; }
+.cl-step.now { background: #597f2d; color: #fff; font-weight: 600; }
+:root[data-theme='dark'] .cl-step.done { background: #2c3d1d; color: #dcf0c8; }
 .cl-matrix { border-collapse: separate; border-spacing: 3px; font-size: 13px; width: 100%; }
 .cl-matrix th { font-size: 12px; font-weight: 600; text-align: center; padding: 4px 6px; color: var(--muted); }
 .cl-matrix th.left, .cl-matrix td.left { text-align: left; }
@@ -23,12 +23,12 @@
 .cl-valid { background: #dff3e6; color: #0b5a2b; }
 .cl-expiring { background: #fff1cc; color: #7a4d00; }
 .cl-missing { background: #fde7e9; color: #8a1a10; }
-.cl-planned { background: #e2f0fb; color: #0b3a66; }
+.cl-planned { background: #e2f0fb; color: #2c3d1d; }
 .cl-na { background: transparent; color: var(--muted); }
 :root[data-theme='dark'] .cl-valid { background: #1c4a2b; color: #cdeed7; }
 :root[data-theme='dark'] .cl-expiring { background: #5a4510; color: #ffe9b0; }
 :root[data-theme='dark'] .cl-missing { background: #5a2723; color: #ffd9d4; }
-:root[data-theme='dark'] .cl-planned { background: #1d3a5c; color: #cfe3f8; }
+:root[data-theme='dark'] .cl-planned { background: #2c3d1d; color: #dcf0c8; }
 .cl-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; margin-bottom: 10px; }
 .cl-legend span { padding: 2px 10px; border-radius: 10px; }
 .cl-book-btn { margin-top: 4px; }
@@ -39,7 +39,7 @@
 .cl-expiry .bar > div { position: absolute; inset: 0 auto 0 0; border-radius: 6px; }
 .cl-wizard-steps { display: flex; gap: 8px; margin-bottom: 14px; font-size: 12px; }
 .cl-wizard-steps span { padding: 3px 10px; border-radius: 12px; background: var(--line); color: var(--muted); }
-.cl-wizard-steps span.on { background: #0f6cbd; color: #fff; }
+.cl-wizard-steps span.on { background: #597f2d; color: #fff; }
 .cl-pre { background: var(--page); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 13px; }
 .cl-stmt { color: #222; }
 .cl-stmt .num { text-align: right; }

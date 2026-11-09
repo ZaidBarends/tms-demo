@@ -55,7 +55,7 @@ export default function LearningAdmin() {
                   <BarChart data={byTeam} layout="vertical" margin={{ left: 20 }}>
                     <CartesianGrid stroke="#8884" horizontal={false} /><XAxis type="number" allowDecimals={false} fontSize={12} /><YAxis type="category" dataKey="name" width={130} fontSize={12} />
                     <Tooltip /><Legend />
-                    <Bar dataKey="Completed" stackId="a" fill="#13a10e" /><Bar dataKey="In progress" stackId="a" fill="#0f6cbd" /><Bar dataKey="Booked" stackId="a" fill="#c4c9cf" />
+                    <Bar dataKey="Completed" stackId="a" fill="#13a10e" /><Bar dataKey="In progress" stackId="a" fill="#597f2d" /><Bar dataKey="Booked" stackId="a" fill="#c4c9cf" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

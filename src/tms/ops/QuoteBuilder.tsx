@@ -101,7 +101,7 @@ export function QuoteBuilder() {
     setDraft(x => ({ ...x, discountPct: v.discountPct, lines: v.lines.map(l => ({ courseId: l.courseId, qty: l.qty, list: l.unit, disc: 0 })) })); setMsg(`Version restored into the editor. Save to keep it.`)
   }
   const contact = d.contacts.find(c => c.orgId === draft.orgId)
-  const emailBody = `Hi ${contact?.name.split(' ')[0] ?? 'there'},\n\nPlease find quotation ${draft.number} for ${money(t.total)} including VAT. It is valid until ${fmtDate(validUntil)}.\n\nYou can review and accept it online in your client portal.\n\nKind regards,\nThandi Mokoena\nTrainCo Academy`
+  const emailBody = `Hi ${contact?.name.split(' ')[0] ?? 'there'},\n\nPlease find quotation ${draft.number} for ${money(t.total)} including VAT. It is valid until ${fmtDate(validUntil)}.\n\nYou can review and accept it online in your client portal.\n\nKind regards,\nThandi Mokoena\nZimele Technologies`
 
   return (
     <>
@@ -186,7 +186,7 @@ export function QuoteBuilder() {
       </Card>
 
       <QuoteDocModal open={preview} onClose={() => setPreview(false)} q={asDoc()} d={d} />
-      <EmailPreview open={email} onClose={() => setEmail(false)} to={contact?.email ?? 'client@example.test'} subject={`Quotation ${draft.number} from TrainCo Academy`} body={emailBody} />
+      <EmailPreview open={email} onClose={() => setEmail(false)} to={contact?.email ?? 'client@example.test'} subject={`Quotation ${draft.number} from Zimele Technologies`} body={emailBody} />
     </>
   )
 }

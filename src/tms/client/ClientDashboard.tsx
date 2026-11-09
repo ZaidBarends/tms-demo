@@ -29,7 +29,7 @@ export default function ClientDashboard() {
   const unpaid = invs.filter(i => i.status !== 'Paid').reduce((a, i) => a + invTotal(i), 0)
   const spent = paid + unpaid
   const pct = Math.round((spent / C.budget) * 100)
-  const gauge = [{ name: 'Paid', value: paid, fill: '#0f6cbd' }, { name: 'Invoiced, unpaid', value: unpaid, fill: '#f7630c' }, { name: 'Budget left', value: Math.max(0, C.budget - spent), fill: '#c4c9cf' }]
+  const gauge = [{ name: 'Paid', value: paid, fill: '#597f2d' }, { name: 'Invoiced, unpaid', value: unpaid, fill: '#f7630c' }, { name: 'Budget left', value: Math.max(0, C.budget - spent), fill: '#c4c9cf' }]
 
   const es = d.enrolments.filter(e => e.orgId === orgId && e.payer === 'employer')
   const byCourse = Array.from(new Set(es.map(e => e.courseId))).map(cid => {
@@ -114,7 +114,7 @@ export default function ClientDashboard() {
                 <BarChart data={byCourse} margin={{ left: -10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#8884" /><XAxis dataKey="name" fontSize={11} /><YAxis domain={[0, 100]} unit="%" fontSize={11} />
                   <Tooltip formatter={(v: number, _n, p) => [`${v}% of ${p.payload.n}`, p.payload.full]} />
-                  <Bar dataKey="rate" fill="#0f6cbd" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="rate" fill="#597f2d" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

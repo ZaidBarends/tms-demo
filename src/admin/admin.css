@@ -1,11 +1,11 @@
 .adm-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
 .adm-org { text-align: left; background: var(--card); color: inherit; font: inherit; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; display: grid; gap: 8px; }
-.adm-org:hover, .adm-org:focus-visible { border-color: #0f6cbd; box-shadow: 0 2px 10px rgba(15, 108, 189, .15); }
+.adm-org:hover, .adm-org:focus-visible { border-color: #597f2d; box-shadow: 0 2px 10px rgba(89, 127, 45, .15); }
 .adm-org h3 { margin: 0; font-size: 16px; }
 .adm-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .adm-metrics div { background: var(--brandsoft); border-radius: 8px; padding: 6px 8px; font-size: 11px; color: var(--muted); }
 .adm-metrics b { display: block; font-size: 15px; color: var(--colorNeutralForeground1); }
-.adm-avatar { width: 40px; height: 40px; border-radius: 50%; background: #0f6cbd; color: #fff; display: inline-grid; place-items: center; font-weight: 600; margin-right: 10px; }
+.adm-avatar { width: 40px; height: 40px; border-radius: 50%; background: #597f2d; color: #fff; display: inline-grid; place-items: center; font-weight: 600; margin-right: 10px; }
 .adm-sim { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 .adm-area { margin: 12px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
 .adm-screen { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: 13px; }

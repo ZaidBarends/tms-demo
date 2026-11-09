@@ -37,7 +37,7 @@ export function GapChart({ depts }: { depts: Dept[] }) {
           <XAxis dataKey="area" tick={{ fontSize: 11 }} interval={0} />
           <YAxis domain={[0, 4]} tickCount={5} tick={{ fontSize: 11 }} />
           <Tooltip formatter={(v: number) => [`${v} of 4`, 'Average gap']} />
-          <Bar dataKey="avg" radius={[4, 4, 0, 0]}>{data.map(x => <Cell key={x.area} fill={x.avg >= 3 ? '#d13438' : x.avg >= 2 ? '#f7630c' : '#0f6cbd'} />)}</Bar>
+          <Bar dataKey="avg" radius={[4, 4, 0, 0]}>{data.map(x => <Cell key={x.area} fill={x.avg >= 3 ? '#d13438' : x.avg >= 2 ? '#f7630c' : '#597f2d'} />)}</Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>

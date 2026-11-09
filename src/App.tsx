@@ -42,11 +42,12 @@ import { extraRoutes as talentRoutes } from './talent/extra.routes'
 import { extraRoutes as adminRoutes } from './admin/extra.routes'
 
 const brand: BrandVariants = {
-  10: '#020305', 20: '#101823', 30: '#14263b', 40: '#173250', 50: '#193f67', 60: '#1a4c80', 70: '#165a9a', 80: '#0f6cbd',
-  90: '#2b7ac6', 100: '#4488cc', 110: '#5a96d2', 120: '#70a4d8', 130: '#85b1de', 140: '#9bbfe4', 150: '#b0cdea', 160: '#c6dbf0',
+  10: '#030503', 20: '#0f1609', 30: '#18240e', 40: '#202f13', 50: '#2c3d1d', 60: '#38501f', 70: '#45691e', 80: '#597f2d',
+  90: '#66903a', 100: '#75b040', 110: '#84bb52', 120: '#92ca61', 130: '#a2d378', 140: '#b4dc90', 150: '#c8e6ac', 160: '#dcf0c8',
 }
-const light = createLightTheme(brand)
-const dark = createDarkTheme(brand)
+const FONT = "'Century Gothic', CenturyGothic, 'Apple Gothic', 'Segoe UI', system-ui, sans-serif"
+const light = { ...createLightTheme(brand), fontFamilyBase: FONT }
+const dark = { ...createDarkTheme(brand), fontFamilyBase: FONT }
 
 const COMPONENTS: Record<string, JSX.Element> = {
   dashboard: <Dashboard />, opportunities: <Opportunities />, tna: <Tna />, quotes: <Quotes />, courses: <Courses />,

@@ -25,8 +25,8 @@ export const NOTIFICATIONS: { id: string; label: string; hint: string }[] = [
 ]
 
 export const seedSettings = (): Settings => ({
-  profile: { name: 'Southern Skills Training (Pty) Ltd', tradingAs: 'Southern Skills Academy', regNo: '2014/218730/07', vatNo: '4410298765', address: '14 Lede Street, Bellville, Cape Town, 7530', email: 'accounts@trainco.example', phone: '021 555 0142', website: 'www.trainco.example' },
-  banking: { bank: 'Cape Commercial Bank', accountName: 'Southern Skills Training (Pty) Ltd', accountNo: '1029384756', branch: '470010', accountType: 'Business current' },
+  profile: { name: 'Zimele Technologies (Pty) Ltd', tradingAs: 'Zimele Academy', regNo: '2014/218730/07', vatNo: '4410298765', address: 'Building 11, Stanford Office Park, 12 Bauhinia Street, Highveld, Centurion, 0169', email: 'accounts@zimeletechnologies.com', phone: '086 999 0229', website: 'www.zimeletechnologies.com' },
+  banking: { bank: 'Cape Commercial Bank', accountName: 'Zimele Technologies (Pty) Ltd', accountNo: '1029384756', branch: '470010', accountType: 'Business current' },
   numbering: { invoicePrefix: 'INV-', invoicePad: 4, quotePrefix: 'Q-2026-', creditPrefix: 'CN-', receiptPrefix: 'RCT-', paymentTermsDays: 30 },
   notifications: { overdue: true, wbfail: true, clash: true, lowfill: true, certexp: true, intro: false, digest: true },
   hours: {
@@ -34,7 +34,7 @@ export const seedSettings = (): Settings => ({
     Thu: { open: true, start: '08:00', end: '17:00' }, Fri: { open: true, start: '08:00', end: '15:30' }, Sat: { open: false, start: '09:00', end: '13:00' }, Sun: { open: false, start: '09:00', end: '13:00' },
   },
   closures: ['2026-12-16 Day of Reconciliation (observed)', '2026-12-25 Christmas Day', '2026-12-26 Day of Goodwill'],
-  branding: { primary: '#0f6cbd', accent: '#2b9bd8', letterhead: 'Training that moves careers forward' },
+  branding: { primary: '#597f2d', accent: '#92ca61', letterhead: 'Training that moves careers forward' },
 })
 
 interface SettingsState { settings: Settings; save: (s: Settings) => void }

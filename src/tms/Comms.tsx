@@ -124,7 +124,7 @@ export default function Comms() {
         </Card>
       )}
       <EmailPreview open={!!msg} onClose={() => setOpen(null)} to={msg?.to ?? ''} subject={msg?.subject ?? ''}
-        body={fillMerge(msgTpl?.body ?? 'Hi {{name}},\n\nThis message was sent from the training platform.\n\nKind regards,\nThe training team', { ...SAMPLE, name: first.charAt(0).toUpperCase() + first.slice(1) })} />
+        body={fillMerge(msgTpl?.body ?? 'Hi {{name}},\n\nThis message was sent from the Zimele Technologies learning platform.\n\nKind regards,\nThe Zimele training team', { ...SAMPLE, name: first.charAt(0).toUpperCase() + first.slice(1) })} />
     </>
   )
 }

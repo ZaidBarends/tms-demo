@@ -20,8 +20,8 @@ function validate(s: S) {
   if (s.numbering.invoicePad < 3 || s.numbering.invoicePad > 8) e.invoicePad = 'Use 3 to 8 digits'
   if (s.numbering.paymentTermsDays < 0 || s.numbering.paymentTermsDays > 120) e.terms = 'Payment terms: 0 to 120 days'
   DAYS.forEach(k => { const h = s.hours[k]; if (h.open && h.start >= h.end) e[`h${k}`] = `${k}: closing time must be after opening` })
-  if (!isHex(s.branding.primary)) e.primary = 'Use a hex colour like #0f6cbd'
-  if (!isHex(s.branding.accent)) e.accent = 'Use a hex colour like #2b9bd8'
+  if (!isHex(s.branding.primary)) e.primary = 'Use a hex colour like #597f2d'
+  if (!isHex(s.branding.accent)) e.accent = 'Use a hex colour like #92ca61'
   return e
 }
 

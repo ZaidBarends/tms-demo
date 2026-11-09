@@ -90,7 +90,7 @@ export default function Skills() {
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radar} outerRadius="72%">
                 <PolarGrid stroke="#8886" /><PolarAngleAxis dataKey="area" fontSize={12} /><PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-                <Radar name="Verified" dataKey="Verified" stroke="#0f6cbd" fill="#0f6cbd" fillOpacity={0.35} />
+                <Radar name="Verified" dataKey="Verified" stroke="#597f2d" fill="#597f2d" fillOpacity={0.35} />
                 <Radar name="Self-assessed" dataKey="Self-assessed" stroke="#13a10e" fill="#13a10e" fillOpacity={0.15} />
                 {req && <Radar name="Target role" dataKey="Target role" stroke="#f7630c" fill="#f7630c" fillOpacity={0.1} strokeDasharray="5 4" />}
                 <Tooltip formatter={(v: number) => `${v}%`} /><Legend />
@@ -103,7 +103,7 @@ export default function Skills() {
           {!gap ? <p className="muted">Pick a role to see which skills you still need and the courses that close each gap.</p> : (
             <>
               <div className="row" style={{ margin: '12px 0' }}>
-                <Ring value={gap.coverage} size={86} stroke={10} color={gap.coverage >= 75 ? '#13a10e' : '#0f6cbd'} label={`${gap.coverage}%`} sub="ready" />
+                <Ring value={gap.coverage} size={86} stroke={10} color={gap.coverage >= 75 ? '#13a10e' : '#597f2d'} label={`${gap.coverage}%`} sub="ready" />
                 <div className="small muted">{gap.rows.filter(r => r.gap > 0).length === 0 ? 'You meet every requirement for this role.' : `${gap.rows.filter(r => r.gap > 0).length} skill${gap.rows.filter(r => r.gap > 0).length === 1 ? '' : 's'} to build.`}</div>
               </div>
               <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Skill</th><th>You</th><th>Need</th><th>Close the gap</th></tr></thead><tbody>

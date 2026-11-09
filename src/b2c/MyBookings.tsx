@@ -109,7 +109,7 @@ export default function MyBookings() {
           {spendByMonth.length === 0 ? <EmptyState title="No spending yet" /> : (
             <div style={{ height: 220 }}><ResponsiveContainer width="100%" height="100%"><BarChart data={spendByMonth} margin={{ left: -8 }}>
               <CartesianGrid stroke="#8884" vertical={false} /><XAxis dataKey="month" fontSize={12} /><YAxis fontSize={12} tickFormatter={v => `R${v / 1000}k`} />
-              <Tooltip formatter={(v: number) => money(v)} /><Bar dataKey="Spend" fill="#0f6cbd" radius={[4, 4, 0, 0]} />
+              <Tooltip formatter={(v: number) => money(v)} /><Bar dataKey="Spend" fill="#597f2d" radius={[4, 4, 0, 0]} />
             </BarChart></ResponsiveContainer></div>
           )}
           {invoices.length > 0 && <p className="small muted">Account invoices on file: {invoices.map(i => i.number).join(', ')}</p>}

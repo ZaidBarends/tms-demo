@@ -90,7 +90,7 @@ export function EmailPreview({ open, onClose, to, subject, body }: { open: boole
           <DialogTitle>Email preview</DialogTitle>
           <DialogContent>
             <div className="email">
-              <div className="email-meta"><b>To:</b> {to}<br /><b>From:</b> Training team &lt;no-reply@trainco.example&gt;<br /><b>Subject:</b> {subject}</div>
+              <div className="email-meta"><b>To:</b> {to}<br /><b>From:</b> Training team &lt;no-reply@zimele.example&gt;<br /><b>Subject:</b> {subject}</div>
               <pre className="email-body">{body}</pre>
               <Text size={200} className="muted">Demo only: nothing was sent.</Text>
             </div>

@@ -16,7 +16,7 @@ export function SideDrawer({ open, onClose, title, subtitle, children, size = 'm
   )
 }
 
-export function Spark({ data, color = '#0f6cbd' }: { data: number[]; color?: string }) {
+export function Spark({ data, color = '#597f2d' }: { data: number[]; color?: string }) {
   const rows = data.map((v, i) => ({ i, v }))
   const id = `sp${color.slice(1)}`
   return (

@@ -1,4 +1,6 @@
-# Training Platform: frontend demo
+# Zimele Technologies Learning Platform: frontend demo
+
+**Branding.** The demo carries the Zimele Technologies identity: the logo (`src/assets/zimele-logo.png`, taken from zimeletechnologies.com), green palette sampled from that site and logo (primary `#597f2d`, brand green `#75b040`, light `#92ca61`, dark `#2c3d1d`) and Century Gothic. The Fluent brand ramp is in `src/App.tsx`; accents live in each area's CSS. Company name, address and phone come from the public website. Registration and VAT numbers, bank details and all people and client names are still invented.
 
 A clickable, frontend-only demo of the training platform: TMS (opportunity to invoice), LMS (courses, progress, skills), the B2C purchase flow and the talent connection, with the access rules visibly working. No backend, no login, invented data. React + TypeScript + Vite, Fluent UI v9, React Router, Zustand, Recharts.
 

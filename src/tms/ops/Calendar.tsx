@@ -12,8 +12,8 @@ import { SessionFormModal } from './SessionForm'
 import './ops.css'
 
 export const CAT_COLOR: Record<string, string> = {
-  'Health & Safety': '#f7630c', Leadership: '#0f6cbd', 'Project Management': '#8764b8', 'Finance Skills': '#13a10e',
-  Cybersecurity: '#2b9bd8', Compliance: '#986f0b', 'Soft Skills': '#c239b3',
+  'Health & Safety': '#f7630c', Leadership: '#597f2d', 'Project Management': '#8764b8', 'Finance Skills': '#13a10e',
+  Cybersecurity: '#92ca61', Compliance: '#986f0b', 'Soft Skills': '#c239b3',
 }
 const WD = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 type View = 'month' | 'week' | 'agenda'
@@ -62,7 +62,7 @@ export default function SessionCalendar() {
   const chip = (s: Session) => {
     const c = course(s.courseId); const bad = !!cl[s.id]
     return (
-      <button key={s.id} className={`ops-chip ${bad ? 'clash' : ''} ${s.status === 'Cancelled' ? 'cancelled' : ''}`} style={{ ['--c' as string]: CAT_COLOR[c?.category ?? ''] ?? '#0f6cbd' }}
+      <button key={s.id} className={`ops-chip ${bad ? 'clash' : ''} ${s.status === 'Cancelled' ? 'cancelled' : ''}`} style={{ ['--c' as string]: CAT_COLOR[c?.category ?? ''] ?? '#597f2d' }}
         draggable={canEdit && s.status === 'Scheduled'} onDragStart={e => { try { e.dataTransfer.setData('text/plain', s.id); e.dataTransfer.effectAllowed = 'move' } catch { /* ignore */ } setDrag(s.id) }} onDragEnd={() => { setDrag(null); setOver(null) }} onClick={() => setSel(s.id)}
         title={`${c?.title}\n${s.venue}\n${iname(s.instructorId)}${bad ? '\nResource clash' : ''}`}
         aria-label={`${c?.title}, ${fmtDate(s.start)}, ${iname(s.instructorId)}${bad ? ', resource clash' : ''}${canEdit ? '. Alt plus arrow keys to reschedule' : ''}`}

@@ -22,7 +22,7 @@ export function SeatChart({ session }: { session: Session }) {
           return <div key={i} className={`ops-seat ${e ? (e.attended ? 'taken att' : 'taken') : ''}`} title={l ? `${l.name}${e.attended ? ' (present)' : ''}` : 'Free seat'}>{l ? l.name.split(' ').map(x => x[0]).join('') : i + 1}</div>
         })}
       </div>
-      <div className="ops-legend"><span><span className="ops-dot" style={{ background: '#0f6cbd' }} />Booked</span><span><span className="ops-dot" style={{ background: '#13a10e' }} />Present</span><span><span className="ops-dot" style={{ background: 'var(--page)', border: '1px solid var(--line)' }} />Free</span>{wait > 0 && <span className="muted">{wait} on waitlist</span>}</div>
+      <div className="ops-legend"><span><span className="ops-dot" style={{ background: '#597f2d' }} />Booked</span><span><span className="ops-dot" style={{ background: '#13a10e' }} />Present</span><span><span className="ops-dot" style={{ background: 'var(--page)', border: '1px solid var(--line)' }} />Free</span>{wait > 0 && <span className="muted">{wait} on waitlist</span>}</div>
     </Card>
   )
 }

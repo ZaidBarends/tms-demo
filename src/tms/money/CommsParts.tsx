@@ -79,14 +79,14 @@ export function TemplateEditor() {
           <div className="row">
             <Button appearance="primary" onClick={save}>Save template</Button>
             <Button onClick={() => setPreview(true)}>Preview email</Button>
-            <Button onClick={() => { sendEmail(draft.id, 'test@trainco.example', fillMerge(draft.subject)); setFlash('Test email sent to test@trainco.example (see the sent log).') }}>Send test</Button>
+            <Button onClick={() => { sendEmail(draft.id, 'test@zimele.example', fillMerge(draft.subject)); setFlash('Test email sent to test@zimele.example (see the sent log).') }}>Send test</Button>
             {draft.custom && <Button appearance="subtle" onClick={() => { delCustom(draft.id); setSel(templates[0].id) }}>Delete</Button>}
           </div>
         </div>
       </Card>
       <Card title="Live preview">
         <div className="email" aria-live="polite">
-          <div className="email-meta"><b>To:</b> {SAMPLE.name.toLowerCase()}.ndlovu@mail.example<br /><b>From:</b> Training team &lt;no-reply@trainco.example&gt;<br /><b>Subject:</b> {fillMerge(draft.subject)}</div>
+          <div className="email-meta"><b>To:</b> {SAMPLE.name.toLowerCase()}.ndlovu@mail.example<br /><b>From:</b> Training team &lt;no-reply@zimele.example&gt;<br /><b>Subject:</b> {fillMerge(draft.subject)}</div>
           <pre className="email-body">{fillMerge(draft.body)}</pre>
         </div>
         <p className="muted small">Sample values: {Object.entries(SAMPLE).map(([k, v]) => `${k} = ${v}`).join(' · ')}</p>

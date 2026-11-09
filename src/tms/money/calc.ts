@@ -3,7 +3,7 @@ import { addDays, daysBetween, fmtDate, money, parse, today, VAT_RATE } from '..
 import { clashes, inclVat, invTotal, seatsTaken, clientName } from '../../shared/calc'
 
 /* ------------------------------------------------------------------ basics */
-export const PALETTE = { blue: '#0f6cbd', sky: '#2b9bd8', green: '#13a10e', orange: '#f7630c', purple: '#8764b8', grey: '#c4c9cf', red: '#c50f1f' }
+export const PALETTE = { blue: '#597f2d', sky: '#92ca61', green: '#13a10e', orange: '#f7630c', purple: '#8764b8', grey: '#c4c9cf', red: '#c50f1f' }
 export const GRID = '#8884'
 
 export const balanceOf = (i: Invoice) => (i.status === 'Paid' ? 0 : Math.max(0, invTotal(i)))

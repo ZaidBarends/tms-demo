@@ -27,7 +27,7 @@ export function icsFor(title: string, dateIso: string, location: string, startHo
   const p = (n: number) => String(n).padStart(2, '0')
   return [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Training demo//EN', 'BEGIN:VEVENT',
-    `UID:${d}-${title.replace(/\W/g, '').slice(0, 12)}@trainco.example`,
+    `UID:${d}-${title.replace(/\W/g, '').slice(0, 12)}@zimele.example`,
     `DTSTART:${d}T${p(startHour)}0000`, `DTEND:${d}T${p(startHour + hours)}0000`,
     `SUMMARY:${title}`, `LOCATION:${location}`, 'END:VEVENT', 'END:VCALENDAR',
   ].join('\r\n')

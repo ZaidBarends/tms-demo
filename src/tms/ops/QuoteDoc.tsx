@@ -1,3 +1,4 @@
+import logoUrl from '../../assets/zimele-logo.png'
 import type { ReactNode } from 'react'
 import { Button } from '@fluentui/react-components'
 import { Modal } from '../../shared/ui'
@@ -24,11 +25,11 @@ export function QuoteDoc({ q, d }: { q: DocQuote; d: Data }) {
     <div className="ops-doc ops-print-area" aria-label={`Quotation ${q.number}`}>
       <div className="ops-doc-head">
         <div className="ops-doc-brand">
-          <div className="ops-doc-logo" aria-hidden>T</div>
-          <div><b style={{ fontSize: 18, color: '#0b3a66' }}>TrainCo Academy</b><div className="small">Professional training and development</div></div>
+          <img className="ops-doc-logo" src={logoUrl} alt="" />
+          <div><b style={{ fontSize: 18, color: '#2c3d1d' }}>Zimele Technologies</b><div className="small">Professional training and development</div></div>
         </div>
         <div className="small" style={{ textAlign: 'right' }}>
-          14 Longmarket Park, Bellville, 7530<br />Tel 021 555 0140 · accounts@trainco.example<br />Reg. 2014/118822/07 · VAT no. 4410298765
+          Building 11, Stanford Office Park, 12 Bauhinia Street, Highveld, Centurion, 0169<br />Tel 086 999 0229 · accounts@zimeletechnologies.com<br />Reg. 2014/118822/07 · VAT no. 4410298765
         </div>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
@@ -72,7 +73,7 @@ export function QuoteDoc({ q, d }: { q: DocQuote; d: Data }) {
 
       <div className="ops-sign">
         <div>{q.signedBy ? <><span className="ops-sig-name">{q.signedBy}</span><br /></> : <><br /><br /></>}Accepted for {org?.name ?? 'client'}{q.signedAt ? ` · ${fmtDateTime(q.signedAt)}` : ''}</div>
-        <div><br /><br />For TrainCo Academy · Thandi Mokoena, Training manager</div>
+        <div><br /><br />For Zimele Technologies · Thandi Mokoena, Training manager</div>
       </div>
     </div>
   )

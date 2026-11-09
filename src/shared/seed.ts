@@ -48,7 +48,7 @@ export function buildSeed(): Data {
   const slug = (n: string) => n.toLowerCase().replace(/[^a-z ]/g, '').replace(/ /g, '.')
   const learners: Learner[] = []
   b2b.forEach(([n, o], i) => learners.push({ id: `l${learners.length + 1}`, name: n, type: 'b2b', orgId: o, email: `${slug(n)}@${orgs.find(x => x.id === o)!.name.split(' ')[0].toLowerCase()}.example`, phone: `082 555 ${String(1100 + i)}`, city: cities[i % 8] }))
-  internal.forEach((n, i) => learners.push({ id: `l${learners.length + 1}`, name: n, type: 'internal', email: `${slug(n)}@trainco.example`, phone: `083 555 ${String(2200 + i)}`, city: 'Cape Town' }))
+  internal.forEach((n, i) => learners.push({ id: `l${learners.length + 1}`, name: n, type: 'internal', email: `${slug(n)}@zimele.example`, phone: `083 555 ${String(2200 + i)}`, city: 'Cape Town' }))
   b2c.forEach((n, i) => learners.push({ id: `l${learners.length + 1}`, name: n, type: 'b2c', email: `${slug(n)}@mail.example`, phone: `071 555 ${String(3300 + i)}`, city: cities[(i + 2) % 8] }))
   const L = (name: string) => learners.find(l => l.name === name)!.id
 

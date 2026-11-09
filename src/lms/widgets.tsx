@@ -3,7 +3,7 @@ import { addDays, parse, today } from '../shared/format'
 import './lms.css'
 
 /** Circular progress ring drawn with SVG. */
-export function Ring({ value, size = 96, stroke = 10, color = '#0f6cbd', label, sub }: {
+export function Ring({ value, size = 96, stroke = 10, color = '#597f2d', label, sub }: {
   value: number; size?: number; stroke?: number; color?: string; label?: ReactNode; sub?: ReactNode
 }) {
   const v = Math.max(0, Math.min(100, value)); const r = (size - stroke) / 2; const c = 2 * Math.PI * r
@@ -23,7 +23,7 @@ export function Ring({ value, size = 96, stroke = 10, color = '#0f6cbd', label, 
 export function Confetti({ count = 36 }: { count?: number }) {
   const bits = useMemo(() => Array.from({ length: count }, (_, i) => ({
     left: (i * 97) % 100, delay: (i % 9) * 0.18, dur: 2.6 + (i % 5) * 0.4, rot: (i * 53) % 360,
-    color: ['#0f6cbd', '#2b9bd8', '#13a10e', '#f7630c', '#8764b8', '#ffb900'][i % 6], w: 6 + (i % 3) * 3,
+    color: ['#597f2d', '#92ca61', '#13a10e', '#f7630c', '#8764b8', '#ffb900'][i % 6], w: 6 + (i % 3) * 3,
   })), [count])
   return (
     <div className="lms-confetti" aria-hidden>

@@ -109,7 +109,7 @@ export function MySchedule() {
           <div className="ops-chart" role="img" aria-label="Sessions and teaching hours per month">
             <ResponsiveContainer><BarChart data={load} margin={{ left: -15 }}>
               <CartesianGrid stroke="#8884" strokeDasharray="3 3" vertical={false} /><XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis allowDecimals={false} tick={{ fontSize: 11 }} /><Tooltip /><Legend />
-              <Bar dataKey="sessions" name="Sessions" fill="#0f6cbd" radius={[4, 4, 0, 0]} /><Bar dataKey="hours" name="Hours" fill="#2b9bd8" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="sessions" name="Sessions" fill="#597f2d" radius={[4, 4, 0, 0]} /><Bar dataKey="hours" name="Hours" fill="#92ca61" radius={[4, 4, 0, 0]} />
             </BarChart></ResponsiveContainer>
           </div>
         </Card>
