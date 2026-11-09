@@ -3,11 +3,13 @@ import { addDays, today } from '../../shared/format'
 export interface BookingRequest {
   id: string; courseId: string; attendees: number; preferredDate: string; delivery: 'On site' | 'At the training centre' | 'Online'
   notes: string; created: string; status: 'Requested' | 'Confirmed'
+  /** Opportunity created in the staff pipeline for this request. */
+  oppId?: string
 }
 export interface Reschedule { id: string; bookingKey: string; courseTitle: string; newDate: string; reason: string; created: string }
 export interface Dispute { id: string; invoice: string; reason: string; detail: string; created: string }
 export interface Payment { invoice: string; at: string; method: 'Card' | 'EFT'; ref: string }
-export interface QuoteRequest { id: string; courseId: string; people: number; notes: string; created: string }
+export interface QuoteRequest { id: string; courseId: string; people: number; notes: string; created: string; oppId?: string }
 export interface RosterPerson { id: string; name: string; email: string; dept: string; jobRole: string }
 export interface LegacyCert { person: string; cert: string; issued: string; expires: string }
 
@@ -64,7 +66,7 @@ export function buildClientSeed(): ClientData {
   ]
   return {
     budget: 650000,
-    bookingRequests: [{ id: 'br1', courseId: 'k6', attendees: 6, preferredDate: d(45), delivery: 'On site', notes: 'Two intakes if possible, one per depot.', created: d(-2), status: 'Requested' }],
+    bookingRequests: [{ id: 'br1', courseId: 'k6', attendees: 6, preferredDate: d(45), delivery: 'On site', notes: 'Two intakes if possible, one per depot.', created: d(-2), status: 'Requested', oppId: 'p11' }],
     reschedules: [], disputes: [], payments: [], quoteRequests: [], roster, legacyCerts,
   }
 }

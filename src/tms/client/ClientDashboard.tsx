@@ -11,6 +11,7 @@ import { downloadText, toCsv } from '../../talent/download'
 import { useClient } from './clientStore'
 import { complianceMatrix } from './clientLogic'
 import { BookingWizard } from './BookingWizard'
+import { createClientLead } from './clientOpp'
 import './client.css'
 
 export default function ClientDashboard() {
@@ -57,8 +58,9 @@ export default function ClientDashboard() {
     if (!f.courseId) e.courseId = 'Choose a course'
     if (!(Number(f.people) >= 1)) e.people = 'Enter how many people'
     setErr(e); if (Object.keys(e).length) return
-    C.addQuoteRequest({ courseId: f.courseId, people: Number(f.people), notes: f.notes.trim() })
-    useStore.getState().log(`${org.name} asked for a quote: ${d.courses.find(c => c.id === f.courseId)?.title}, ${f.people} people`)
+    const oppId = createClientLead({ orgId, courseId: f.courseId, people: Number(f.people), kind: 'quote', notes: f.notes.trim() })
+    C.addQuoteRequest({ courseId: f.courseId, people: Number(f.people), notes: f.notes.trim(), oppId })
+    useStore.getState().log(`${org.name} asked for a quote: ${d.courses.find(c => c.id === f.courseId)?.title}, ${f.people} people. Added to Opportunities.`)
     setQr(false); setMsg('Quote request sent. The training team will respond within one working day.'); setF({ courseId: '', people: '10', notes: '' })
   }
   const report = () => {

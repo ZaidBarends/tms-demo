@@ -7,6 +7,8 @@ import { addDays, fmtDate, today } from '../../shared/format'
 import { useClient } from './clientStore'
 import { BOOKING_STEPS, BookingGroup, groupBookings } from './clientLogic'
 import { BookingWizard } from './BookingWizard'
+import { requestView } from './clientOpp'
+import { moveStage } from '../ops/mutate'
 import { AddLearnerDialog } from './AddLearnerDialog'
 import './client.css'
 
@@ -38,7 +40,7 @@ export function ClientBookings() {
   const title = (cid: string) => d.courses.find(c => c.id === cid)?.title ?? ''
   const shown = groups.filter(g => (!st || g.status === st) && (!q || title(g.courseId).toLowerCase().includes(q.toLowerCase())
     || g.enrolments.some(e => d.learners.find(l => l.id === e.learnerId)?.name.toLowerCase().includes(q.toLowerCase()))))
-  const reqs = C.bookingRequests.filter(r => (!st || r.status === st) && (!q || title(r.courseId).toLowerCase().includes(q.toLowerCase())))
+  const reqs = C.bookingRequests.map(r => ({ r, v: requestView(r, d) })).filter(({ r, v }) => (!st || v.status === st) && (!q || title(r.courseId).toLowerCase().includes(q.toLowerCase())))
   const reschFor = (key: string) => C.reschedules.filter(r => r.bookingKey === key)
 
   const submitResch = () => {
@@ -64,16 +66,18 @@ export function ClientBookings() {
       {reqs.length > 0 && (
         <>
           <h2 className="card-title" style={{ margin: '4px 0 10px' }}>Your requests</h2>
-          {reqs.map(r => (
+          {reqs.map(({ r, v }) => (
             <div className="cl-booking" key={r.id}>
               <div className="cl-booking-head" style={{ cursor: 'default' }}>
                 <div style={{ flex: 1 }}><b>{title(r.courseId)}</b><div className="muted small">{r.attendees} attendee(s) · {r.delivery} · preferred {fmtDate(r.preferredDate)} · asked {fmtDate(r.created)}</div></div>
-                <Status s={r.status} />
+                <Status s={v.status} />
               </div>
               <div className="cl-booking-body">
-                <Stepper status={r.status} />
+                <Stepper status={v.status} />
+                <p className="small" role="status">{v.note}</p>
                 {r.notes && <p className="small muted">Notes: {r.notes}</p>}
-                {r.status === 'Requested' && <Button size="small" appearance="subtle" onClick={() => C.confirmRequest(r.id)}>Demo: training team confirms this request</Button>}
+                {v.status === 'Requested' && <Button size="small" appearance="subtle" onClick={() => (r.oppId && d.opportunities.some(o => o.id === r.oppId) ? moveStage(r.oppId, 'won') : C.confirmRequest(r.id))}>Demo: training team confirms this request</Button>}
+                {r.oppId && d.opportunities.some(o => o.id === r.oppId) && <p className="small muted">Demo: staff see this request in Opportunities. The button above moves it to Won there.</p>}
               </div>
             </div>
           ))}

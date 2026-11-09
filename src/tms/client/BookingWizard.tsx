@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@fluentui/react-components'
-import { useStore } from '../../shared/store'
+import { useStore, useCtx } from '../../shared/store'
+import { createClientLead } from './clientOpp'
 import { Modal } from '../../shared/ui'
 import { FArea, FSelect, FText } from '../../shared/fields'
 import { addDays, fmtDate, today } from '../../shared/format'
@@ -12,7 +13,9 @@ const STEPS = ['Course', 'When and where', 'Review']
 
 export function BookingWizard({ open, onClose, initialCourse = '' }: { open: boolean; onClose: () => void; initialCourse?: string }) {
   const d = useStore(s => s.data)
-  const add = useClient(s => s.addBookingRequest)
+  const { orgId } = useCtx()
+  const orgName = d.orgs.find(o => o.id === orgId)?.name ?? 'The client'
+  const add =useClient(s => s.addBookingRequest)
   const [step, setStep] = useState(0)
   const [f, setF] = useState({ courseId: initialCourse, attendees: '8', date: addDays(today(), 30), delivery: 'On site' as BookingRequest['delivery'], notes: '' })
   const [err, setErr] = useState<Record<string, string>>({})
@@ -36,8 +39,9 @@ export function BookingWizard({ open, onClose, initialCourse = '' }: { open: boo
   const next = () => { if (validate(step)) setStep(step + 1) }
   const submit = () => {
     if (!validate(0) || !validate(1)) return
-    add({ courseId: f.courseId, attendees: Number(f.attendees), preferredDate: f.date, delivery: f.delivery, notes: f.notes.trim() })
-    useStore.getState().log(`Cape Freight requested a booking: ${course?.title}, ${f.attendees} attendee(s)`)
+    const oppId = createClientLead({ orgId, courseId: f.courseId, people: Number(f.attendees), kind: 'booking', preferredDate: f.date, delivery: f.delivery, notes: f.notes.trim() })
+    add({ courseId: f.courseId, attendees: Number(f.attendees), preferredDate: f.date, delivery: f.delivery, notes: f.notes.trim(), oppId })
+    useStore.getState().log(`${orgName} requested a booking: ${course?.title}, ${f.attendees} attendee(s). Added to Opportunities.`)
     setSent(true)
   }
 
