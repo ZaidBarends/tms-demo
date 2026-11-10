@@ -3,7 +3,8 @@ import { addDays, today, totals } from '../../shared/format'
 import type { Data, Quote } from '../../shared/types'
 import { DEFAULT_TERMS, uid, useOps, type QuoteMeta } from './opsStore'
 import type { DocQuote } from './QuoteDoc'
-import { moveStage } from './mutate'
+import { moveStage, mutate } from './mutate'
+import { useMoney } from '../money/store'
 
 export const BUNDLES: { id: string; name: string; blurb: string; items: { code: string; qty: number }[] }[] = [
   { id: 'b1', name: 'Safety starter', blurb: 'H&S essentials plus first aid for a depot', items: [{ code: 'HSE-101', qty: 20 }, { code: 'HSE-220', qty: 10 }] },
@@ -51,6 +52,47 @@ export function acceptQuote(q: Quote, signedBy?: string) {
   ops.setQuoteMeta(q.id, { ...meta, signedBy: signedBy ?? meta.signedBy, signedAt: new Date().toISOString() })
   if (signedBy) st.log(`Quote ${q.number} e-signed by ${signedBy}`)
   if (meta.oppId) moveStage(meta.oppId, 'won', 'Quote accepted by client')
+  raiseInvoice(q)
+  addHandoffTasks(q, meta.oppId)
+}
+
+/** Next invoice number, one above the highest existing INV-nnnn. */
+export function nextInvoiceNumber(d: Data): string {
+  const max = d.invoices.reduce((a, i) => Math.max(a, Number(i.number.split('-').pop()) || 0), 0)
+  return `INV-${String(max + 1).padStart(4, '0')}`
+}
+
+/**
+ * Raise the invoice for an accepted quote (ex-VAT net of the quote, 30-day terms, queued for Workbook).
+ * Idempotent: a quote that already has an invoice number is skipped. Returns the invoice number.
+ */
+export function raiseInvoice(q: Quote): string | undefined {
+  const st = useStore.getState(); const ops = useOps.getState()
+  const meta = metaFor(q, ops.quoteMeta[q.id])
+  if (meta.invoiceNumber) return meta.invoiceNumber
+  const number = nextInvoiceNumber(st.data)
+  const titles = q.lines.map(l => st.data.courses.find(c => c.id === l.courseId)?.title).filter(Boolean)
+  const description = `${titles.slice(0, 2).join(' and ')}${titles.length > 2 ? ` +${titles.length - 2} more` : ''} (quote ${q.number})`
+  mutate(d => {
+    d.invoices.push({ number, orgId: q.orgId, description, amount: Math.round(totals(q.lines, q.discountPct).net * 100) / 100, status: 'Sent', issued: today(), due: addDays(today(), 30), wb: 'Pending' })
+  })
+  ops.setQuoteMeta(q.id, { ...meta, invoiceNumber: number })
+  useMoney.getState().addEvent({ invoice: number, kind: 'note', text: `Invoice raised from accepted quote ${q.number}` })
+  useMoney.getState().addAttempt({ number, kind: 'Invoice', result: 'Queued', message: 'Waiting for the next Workbook sync window' })
+  st.log(`Invoice ${number} raised from accepted quote ${q.number}`)
+  return number
+}
+
+/** A won deal still needs delivery: give the owner the follow-up work as tasks on the opportunity. */
+function addHandoffTasks(q: Quote, oppId?: string) {
+  if (!oppId) return
+  useOps.getState().patchOpp(oppId, o => {
+    if (o.tasks.some(t => t.id.startsWith(`ho-${q.id}`))) return o
+    return { ...o, tasks: [...o.tasks,
+      { id: `ho-${q.id}-1`, text: `Schedule sessions for quote ${q.number}`, due: addDays(today(), 3), done: false },
+      { id: `ho-${q.id}-2`, text: `Enrol learners and confirm dates with the client (${q.number})`, due: addDays(today(), 7), done: false },
+    ] }
+  })
 }
 
 export function extendQuote(q: Quote) {

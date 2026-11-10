@@ -9,7 +9,7 @@ import type { Quote } from '../../shared/types'
 import { DEFAULT_TERMS, uid, useOps } from './opsStore'
 import { expiry, netUnit } from './logic'
 import { QuoteDocModal, docTotals, type DocQuote, type DocLine } from './QuoteDoc'
-import { BUNDLES, acceptQuote, duplicateQuote, extendQuote, metaFor, nextQuoteNumber, sendQuote } from './quoteActions'
+import { BUNDLES, acceptQuote, raiseInvoice, duplicateQuote, extendQuote, metaFor, nextQuoteNumber, sendQuote } from './quoteActions'
 import { ExpiryChip } from './QuoteViews'
 
 interface Draft {
@@ -168,6 +168,9 @@ export function QuoteBuilder() {
         {!locked && draft.status !== 'Expired' && <Button onClick={() => { if (persist('Sent to client')) { sendQuote({ ...asQuote(), status: 'Draft' }); setDraft(x => ({ ...x, status: 'Sent' })); setEmail(true); finishNew() } }}>{draft.status === 'Sent' ? 'Resend to client' : 'Send to client'}</Button>}
         {!isNew && <Button onClick={() => nav(`/quotes/${duplicateQuote(asQuote())}`)}>Duplicate quote</Button>}
         {!isNew && draft.status === 'Sent' && <Button onClick={() => { acceptQuote(asQuote()); setDraft({ ...draft, status: 'Accepted' }) }}>Mark as accepted</Button>}
+        {!isNew && draft.status === 'Accepted' && (ops.quoteMeta[draft.id]?.invoiceNumber
+          ? <span className="muted">Invoiced as {ops.quoteMeta[draft.id]!.invoiceNumber}</span>
+          : <Button onClick={() => { const n = raiseInvoice(asQuote()); setMsg(n ? `Invoice ${n} raised.` : '') }}>Raise invoice</Button>)}
         {!isNew && draft.status === 'Sent' && <Button onClick={() => { setStatus(draft.id, 'Expired'); setDraft({ ...draft, status: 'Expired' }) }}>Mark as expired</Button>}
         {!isNew && draft.status === 'Expired' && <Button onClick={() => { extendQuote(asQuote()); setDraft({ ...draft, status: 'Sent', validityDays: 30, issued: today() }) }}>Reissue for 30 days</Button>}
         {msg && <span role="status" className="muted">{msg}</span>}

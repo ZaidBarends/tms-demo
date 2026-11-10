@@ -15,7 +15,7 @@ export interface OppExtra {
 }
 export interface QuoteMeta {
   terms: string; validityDays: number; lineMeta: { list: number; disc: number }[]
-  oppId?: string; signedBy?: string; signedAt?: string; sentAt?: string; internalNote?: string
+  oppId?: string; signedBy?: string; signedAt?: string; sentAt?: string; internalNote?: string; invoiceNumber?: string
 }
 export interface QuoteVersion { id: string; at: string; by: string; label: string; lines: QuoteLine[]; discountPct: number; total: number }
 export interface MaterialItem { id: string; label: string; done: boolean }

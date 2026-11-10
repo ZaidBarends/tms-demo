@@ -1,5 +1,6 @@
 import type { Data, Invoice, Opportunity, Stage } from '../../shared/types'
 import { addDays, daysBetween, fmtDate, money, parse, today, VAT_RATE } from '../../shared/format'
+import { STAGE_PROB as STAGE_PCT } from '../ops/logic'
 import { clashes, inclVat, invTotal, seatsTaken, clientName } from '../../shared/calc'
 
 /* ------------------------------------------------------------------ basics */
@@ -147,7 +148,8 @@ export function fakeSeries(current: number, seed: number, n = 6, spread = 0.14) 
 }
 
 /* --------------------------------------------------------------- pipeline */
-export const STAGE_PROB: Record<Stage, number> = { enquiry: 0.1, needs: 0.3, quoted: 0.6, won: 1, lost: 0 }
+/** Stage win probability as a fraction, derived from the single percentage table in ops/logic. */
+export const STAGE_PROB = Object.fromEntries(Object.entries(STAGE_PCT).map(([k, v]) => [k, v / 100])) as Record<Stage, number>
 export function pipeline(opps: Opportunity[]) {
   const n = (f: (o: Opportunity) => boolean) => opps.filter(f)
   const reached = [

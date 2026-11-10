@@ -29,6 +29,7 @@ interface Actions {
   saveCard: (c: SavedCard | null) => void
   recordOrder: (receiptId: string, m: OrderMeta) => void
   addRequest: (r: Omit<BookingRequest, 'id' | 'at' | 'status'>) => void
+  approveRequestStatus: (id: string) => void
   setMentorMeta: (sessionId: string, patch: Partial<MentorMeta> & { time?: string }) => void
   enrolAcademy: (academyId: string, learnerId: string) => void
   resetB2c: () => void
@@ -56,6 +57,7 @@ export const useB2c = create<Persisted & Actions>()(
       clearCompare: () => set({ compare: [] }),
       addReview: r => set(s => ({ reviews: [{ ...r, id: uid('rv'), date: today(), mine: true }, ...s.reviews] })),
       toggleWaitlist: (sid, lid) => set(s => { const cur = s.waitlist[sid] ?? []; return { waitlist: { ...s.waitlist, [sid]: cur.includes(lid) ? cur.filter(x => x !== lid) : [...cur, lid] } } }),
+      approveRequestStatus: id => set(s => ({ requests: s.requests.map(r => r.id === id ? { ...r, status: 'Approved' as const } : r) })),
       saveCard: card => set({ card }),
       recordOrder: (rid, m) => set(s => ({ orders: { ...s.orders, [rid]: m } })),
       addRequest: r => set(s => ({ requests: [{ ...r, id: uid('rq'), at: today(), status: 'Requested' }, ...s.requests] })),

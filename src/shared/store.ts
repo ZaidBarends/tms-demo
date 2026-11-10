@@ -5,6 +5,9 @@ import { buildSeed } from './seed'
 import { addDays, today } from './format'
 import { runResets } from './resetRegistry'
 
+/** Days a certificate stays valid, by course category (no entry = never expires). Cybersecurity matches the client compliance matrix. */
+export const CERT_VALIDITY_DAYS: Record<string, number> = { 'Health & Safety': 730, Compliance: 730, Cybersecurity: 365 }
+
 interface State {
   data: Data
   persona: Persona
@@ -56,7 +59,8 @@ export const useStore = create<State>()(
         if (e.certificateId) return
         const course = d.courses.find(c => c.id === e.courseId)!
         const id = `CERT-${1000 + d.certificates.length + 1}${Math.floor(Math.random() * 90 + 10)}`
-        const expires = ['Health & Safety', 'Compliance'].includes(course.category) ? addDays(today(), 730) : undefined
+        const validity = CERT_VALIDITY_DAYS[course.category]
+        const expires = validity ? addDays(today(), validity) : undefined
         d.certificates.push({ id, learnerId: e.learnerId, courseId: e.courseId, issued: today(), expires })
         e.certificateId = id; e.status = 'Completed'; e.progress = 100
         const learner = d.learners.find(l => l.id === e.learnerId)!

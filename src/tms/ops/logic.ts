@@ -1,6 +1,9 @@
 import type { Course, Data, Opportunity, Quote, Stage } from '../../shared/types'
 import { addDays, daysBetween, iso, parse, today } from '../../shared/format'
 
+/** Classroom pass mark (with attendance). The online knowledge check uses a stricter 70% (lms/content.ts). */
+export const CLASS_PASS_MARK = 50
+
 /* ------------------------------ pipeline ------------------------------ */
 export const STAGE_PROB: Record<Stage, number> = { enquiry: 10, needs: 30, quoted: 60, won: 100, lost: 0 }
 export const probOf = (o: Pick<Opportunity, 'stage'>, override?: number) => override ?? STAGE_PROB[o.stage]
