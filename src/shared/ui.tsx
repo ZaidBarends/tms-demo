@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useRef } from 'react'
 import { Badge, Button, Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, DialogActions, DialogTrigger, MessageBar, MessageBarBody, Text } from '@fluentui/react-components'
 import type { Release } from './types'
 import { SCREENS, ROLE_LABEL } from './access'
@@ -12,9 +12,26 @@ export function PageHeader({ id, title, subtitle, actions }: { id?: string; titl
   const explainer = useStore(s => s.explainer)
   const persona = useStore(s => s.persona)
   const screen = SCREENS.find(s => s.id === id)
+  const head = useRef<HTMLDivElement>(null)
+  // Publish the header height so sticky tab bars can sit directly beneath it.
+  useEffect(() => {
+    const el = head.current
+    if (!el) return
+    const bar = document.querySelector<HTMLElement>('.topbar')
+    const root = document.documentElement.style
+    const set = () => {
+      root.setProperty('--head-h', `${el.offsetHeight + 1}px`)
+      // Where the sticky top bar ends, so the header sits flush beneath it with no gap for content to show through.
+      if (bar) root.setProperty('--stick-top', `${(document.querySelector<HTMLElement>('.ribbon')?.offsetHeight ?? 0) + bar.offsetHeight}px`)
+    }
+    set()
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(set); ro.observe(el); if (bar) ro.observe(bar)
+    return () => { ro.disconnect(); root.removeProperty('--head-h') }
+  }, [])
   return (
     <>
-      <div className="page-head">
+      <div className="page-head" ref={head}>
         <div>
           <h1 className="page-title">{title} {screen && screen.release !== 'R1' && <ReleaseBadge r={screen.release} />}</h1>
           {subtitle && <Text className="muted">{subtitle}</Text>}

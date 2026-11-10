@@ -32,6 +32,15 @@ html, body { margin: 0; background: var(--page); font-family: 'Century Gothic', 
 .rel-R2 { background: #fff1cc; color: #7a4d00; }
 .rel-R3 { background: #ece3fb; color: #4b2a8a; }
 .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+/* Keep the page title, actions and tabs in view while scrolling. Full-bleed so content never shows through the padding. */
+.content > .page-head { position: sticky; top: var(--stick-top, 72px); z-index: 12; background: var(--page); margin: -28px -32px 20px; padding: 14px 32px 12px; border-bottom: 1px solid var(--line); }
+/* Paint over anything between the top bar and the header, whatever the exact offsets are. The top bar sits above (z-index 20). */
+.content > .page-head::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 48px; background: var(--page); pointer-events: none; }
+.content > [role="tablist"] { position: sticky; top: calc(var(--stick-top, 72px) + var(--head-h, 0px)); z-index: 11; background: var(--page); margin-left: -32px; margin-right: -32px; padding: 0 32px; border-bottom: 1px solid var(--line); }
+@media (max-width: 980px) {
+  .content > .page-head { margin: -20px -16px 16px; padding: 10px 16px; }
+  .content > [role="tablist"] { margin-left: -16px; margin-right: -16px; padding: 0 16px; overflow-x: auto; }
+}
 .page-title { margin: 0 0 4px; font-size: 26px; font-weight: 600; display: flex; gap: 10px; align-items: center; }
 .page-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .explainer { margin-bottom: 18px; }
