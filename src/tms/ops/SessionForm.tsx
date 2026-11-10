@@ -7,7 +7,8 @@ import { fmtDate } from '../../shared/format'
 import { seatsTaken } from '../../shared/calc'
 import type { Session } from '../../shared/types'
 import { useOps } from './opsStore'
-import { EQUIPMENT_ITEMS, VENUES, conflictsFor, suggest } from './logic'
+import { conflictsFor, suggest } from './logic'
+import { useResources } from '../resources/registry'
 
 const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const dayName = (s: string) => WD[new Date(s + 'T00:00:00').getDay()]
@@ -23,6 +24,11 @@ function Inner({ initial, onClose, isNew, onSaved }: { initial: Session; onClose
   const save = useStore(s => s.saveSession)
   const unavailable = useOps(s => s.unavailable)
   const [s, setS] = useState<Session>(initial)
+  const reg = useResources()
+  // Out-of-service items are hidden for new choices, but kept if this session already uses them so the flag stays visible.
+  const venueOpts = reg.venues.filter(v => v.status === 'Available' || v.name === s.venue).map(v => v.name)
+  const equipOpts = reg.equipment.filter(e => e.status === 'Available' || s.equipment.includes(e.name)).map(e => e.name)
+  const seats = reg.venues.find(v => v.name === s.venue)?.seats
   const [err, setErr] = useState<Record<string, string>>({})
   const conflicts = conflictsFor(d, s, unavailable)
   const alt = conflicts.length ? suggest(d, s, unavailable) : null
@@ -45,15 +51,26 @@ function Inner({ initial, onClose, isNew, onSaved }: { initial: Session; onClose
       <div className="form c2">
         <FSelect label="Course" value={s.courseId} onChange={v => setS({ ...s, courseId: v })} error={err.courseId} options={d.courses.filter(c => c.status !== 'Retired').map(c => ({ value: c.id, label: `${c.code} ${c.title}` }))} />
         <FText label={`Date${s.start ? ` (${dayName(s.start)})` : ''}`} type="date" value={s.start} onChange={v => setS({ ...s, start: v })} error={err.start} />
-        <FSelect label="Venue" value={s.venue} onChange={v => setS({ ...s, venue: v })} options={Array.from(new Set([...VENUES, s.venue])).map(v => ({ value: v, label: v }))} />
+        <FSelect label="Venue" value={s.venue} onChange={v => setS({ ...s, venue: v })} options={Array.from(new Set([...venueOpts, s.venue])).map(v => ({ value: v, label: v }))} />
         <FSelect label="Instructor" value={s.instructorId} onChange={v => setS({ ...s, instructorId: v })} options={d.staff.filter(x => x.role === 'instructor').map(x => ({ value: x.id, label: x.name }))} />
         <FText label="Capacity" type="number" min={1} value={s.capacity} onChange={v => setS({ ...s, capacity: Number(v) })} error={err.capacity} />
         <FSelect label="Status" value={s.status} onChange={v => setS({ ...s, status: v as Session['status'] })} options={['Scheduled', 'Completed', 'Cancelled'].map(x => ({ value: x, label: x }))} />
         <div style={{ gridColumn: '1 / -1' }}>
           <div className="muted small" style={{ marginBottom: 4 }}>Equipment</div>
-          <div className="row">{EQUIPMENT_ITEMS.map(eq => <Checkbox key={eq} label={eq} checked={s.equipment.includes(eq)} onChange={(_, c) => setS({ ...s, equipment: c.checked ? [...s.equipment, eq] : s.equipment.filter(x => x !== eq) })} />)}</div>
+          <div className="row" style={{ flexWrap: 'wrap', gap: 14 }}>{equipOpts.map(eq => {
+            const stock = reg.equipment.find(e => e.name === eq)?.quantity ?? 0
+            const on = s.equipment.includes(eq)
+            return (
+              <span key={eq} className="row" style={{ gap: 6 }}>
+                <Checkbox label={stock > 0 ? `${eq} (${stock} in stock)` : eq} checked={on} onChange={(_, c) => setS({ ...s, equipment: c.checked ? [...s.equipment, eq] : s.equipment.filter(x => x !== eq) })} />
+                {on && stock > 0 && <input type="number" min={1} max={stock} aria-label={`Units of ${eq} needed`} value={s.equipmentQty?.[eq] ?? 1} style={{ width: 64, font: 'inherit', padding: 4, background: 'var(--card)', color: 'inherit', border: '1px solid var(--line)', borderRadius: 6 }}
+                  onChange={e => setS({ ...s, equipmentQty: { ...(s.equipmentQty ?? {}), [eq]: Math.max(1, Math.floor(Number(e.target.value) || 1)) } })} />}
+              </span>
+            )
+          })}</div>
         </div>
       </div>
+      {seats !== undefined && s.capacity > seats && <div className="small" role="note" style={{ marginTop: 8 }}>Capacity {s.capacity} is more than the {seats} seats at {s.venue}.</div>}
       <div style={{ marginTop: 14 }} aria-live="polite">
         {conflicts.length === 0 ? <div className="ops-okbox">No clashes: venue, instructor and equipment are free on {fmtDate(s.start)}.</div> : (
           <div className="ops-warnbox" role="alert">

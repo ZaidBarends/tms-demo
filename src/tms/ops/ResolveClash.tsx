@@ -28,7 +28,8 @@ export function ResolveClashModal({ open, onClose }: { open: boolean; onClose: (
             const s = d.sessions.find(x => x.id === id)!; const c = d.courses.find(k => k.id === s.courseId)
             const alt = suggest(d, s, unavailable)
             const reasons = Array.from(new Set(cl[id]))
-            const hasEq = reasons.some(r => r.startsWith('Equipment'))
+            const eqNames = reasons.filter(r => r.startsWith('Equipment: ')).map(r => r.slice(11).replace(/ \(.*$/, ''))
+            const hasEq = eqNames.length > 0
             return (
               <div key={id} className="callout">
                 <b>{c?.code} {c?.title}</b> <span className="muted small">· {fmtDate(s.start)} · {s.venue} · {iname(s.instructorId)}</span>
@@ -37,7 +38,7 @@ export function ResolveClashModal({ open, onClose }: { open: boolean; onClose: (
                   {alt.venues.slice(0, 2).map(v => <Button key={v} size="small" onClick={() => apply(s, { venue: v }, `moved to ${v}`)}>Move to {v.replace('Cape Town Training Centre – ', 'CTTC ')}</Button>)}
                   {alt.instructors.slice(0, 2).map(i => <Button key={i} size="small" onClick={() => apply(s, { instructorId: i }, `reassigned to ${iname(i)}`)}>Assign {iname(i)}</Button>)}
                   {alt.dates.slice(0, 2).map(x => <Button key={x} size="small" onClick={() => apply(s, { start: x }, `moved to ${fmtDate(x)}`)}>Move to {fmtDate(x)}</Button>)}
-                  {hasEq && <Button size="small" onClick={() => apply(s, { equipment: s.equipment.filter(e => e !== 'Laptop trolley') }, 'released the laptop trolley')}>Release laptop trolley</Button>}
+                  {hasEq && <Button size="small" onClick={() => apply(s, { equipment: s.equipment.filter(e => !eqNames.includes(e)) }, `released ${eqNames.join(', ')}`)}>Release {eqNames.join(', ')}</Button>}
                   {!alt.venues.length && !alt.instructors.length && !alt.dates.length && <span className="small">No free alternatives found in the next three weeks.</span>}
                 </div>
               </div>

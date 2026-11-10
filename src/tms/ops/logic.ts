@@ -1,5 +1,7 @@
 import type { Course, Data, Opportunity, Quote, Stage } from '../../shared/types'
 import { addDays, daysBetween, iso, parse, today } from '../../shared/format'
+import { isOnline, isOutOfService, stockOf, venueNames } from '../resources/registry'
+import { unitsFor } from '../resources/stock'
 
 /** Classroom pass mark (with attendance). The online knowledge check uses a stricter 70% (lms/content.ts). */
 export const CLASS_PASS_MARK = 50
@@ -30,13 +32,14 @@ export function expiry(validUntil: string, status: Quote['status'], now = today(
 }
 
 /* ----------------------------- scheduling ------------------------------ */
+/** Seed lists. The live lists are the resource register (tms/resources/registry.ts), which administrators can edit. */
 export const VENUES = [
   'Cape Town Training Centre – Room A', 'Cape Town Training Centre – Room B', 'Bellville Boardroom', 'Stellenbosch Hub', 'Online (video call)',
 ]
 export const EQUIPMENT_ITEMS = ['Projector', 'Laptop trolley', 'First aid manikins', 'Harness kit']
 
-export interface Candidate { id?: string; start: string; venue: string; instructorId: string; equipment: string[] }
-export interface Conflict { kind: 'venue' | 'instructor' | 'equipment' | 'unavailable'; text: string; withId?: string }
+export interface Candidate { id?: string; start: string; venue: string; instructorId: string; equipment: string[]; equipmentQty?: Record<string, number> }
+export interface Conflict { kind: 'venue' | 'instructor' | 'equipment' | 'unavailable' | 'resource'; text: string; withId?: string }
 
 export function conflictsFor(d: Data, c: Candidate, unavailable: Record<string, string[]> = {}): Conflict[] {
   const out: Conflict[] = []
@@ -44,10 +47,19 @@ export function conflictsFor(d: Data, c: Candidate, unavailable: Record<string, 
   for (const s of d.sessions) {
     if (s.id === c.id || s.status === 'Cancelled' || s.start !== c.start) continue
     const title = d.courses.find(k => k.id === s.courseId)?.code ?? 'another session'
-    if (s.venue === c.venue && !c.venue.startsWith('Online')) out.push({ kind: 'venue', text: `${c.venue} is already used by ${title}`, withId: s.id })
+    if (s.venue === c.venue && !isOnline(c.venue)) out.push({ kind: 'venue', text: `${c.venue} is already used by ${title}`, withId: s.id })
     if (s.instructorId === c.instructorId) out.push({ kind: 'instructor', text: `${name(c.instructorId)} already teaches ${title}`, withId: s.id })
-    if (c.equipment.includes('Laptop trolley') && s.equipment.includes('Laptop trolley')) out.push({ kind: 'equipment', text: `Laptop trolley is already booked for ${title}`, withId: s.id })
   }
+  // Tracked equipment: this session's units plus every other session that day must fit within the stock held.
+  for (const eq of c.equipment) {
+    const stock = stockOf(eq)
+    if (stock <= 0) continue
+    const others = d.sessions.filter(s => s.id !== c.id && s.status !== 'Cancelled' && s.start === c.start && s.equipment.includes(eq))
+    const need = unitsFor(c, eq) + others.reduce((a, s) => a + unitsFor(s, eq), 0)
+    if (need > stock) out.push({ kind: 'equipment', text: others.length ? `${eq}: ${need} needed on ${c.start} but only ${stock} in stock (also used by ${d.courses.find(k => k.id === others[0].courseId)?.code ?? 'another session'})` : `${eq}: ${need} needed but only ${stock} in stock`, withId: others[0]?.id })
+  }
+  if (isOutOfService('venue', c.venue)) out.push({ kind: 'resource', text: `${c.venue} is out of service` })
+  for (const eq of c.equipment) if (isOutOfService('equipment', eq)) out.push({ kind: 'resource', text: `${eq} is out of service` })
   if ((unavailable[c.instructorId] ?? []).includes(c.start)) out.push({ kind: 'unavailable', text: `${name(c.instructorId)} marked ${c.start} as unavailable` })
   return out
 }
@@ -56,7 +68,7 @@ const isWeekend = (dateStr: string) => { const w = parse(dateStr).getDay(); retu
 
 export interface Suggestions { venues: string[]; instructors: string[]; dates: string[] }
 export function suggest(d: Data, c: Candidate, unavailable: Record<string, string[]> = {}, horizon = 21): Suggestions {
-  const venues = VENUES.filter(v => v !== c.venue && !conflictsFor(d, { ...c, venue: v }, unavailable).some(x => x.kind === 'venue'))
+  const venues = venueNames(true).filter(v => v !== c.venue && !conflictsFor(d, { ...c, venue: v }, unavailable).some(x => x.kind === 'venue'))
   const instructors = d.staff.filter(s => s.role === 'instructor' && s.id !== c.instructorId
     && !conflictsFor(d, { ...c, instructorId: s.id }, unavailable).some(x => x.kind === 'instructor' || x.kind === 'unavailable')).map(s => s.id)
   const dates: string[] = []

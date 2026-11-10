@@ -1,5 +1,7 @@
 import type { Data, Invoice, Stage } from './types'
 import { VAT_RATE } from './format'
+import { isOnline } from '../tms/resources/registry'
+import { stockClashes } from '../tms/resources/stock'
 
 export const STAGES: { id: Stage; label: string }[] = [
   { id: 'enquiry', label: 'Enquiry' }, { id: 'needs', label: 'Needs analysis' }, { id: 'quoted', label: 'Quoted' },
@@ -22,10 +24,11 @@ export function clashes(d: Data): Record<string, string[]> {
     const a = live[i], b = live[j]
     if (a.start !== b.start) continue
     const why: string[] = []
-    if (a.venue === b.venue && !a.venue.startsWith('Online')) why.push(`Venue: ${a.venue}`)
+    if (a.venue === b.venue && !isOnline(a.venue)) why.push(`Venue: ${a.venue}`)
     if (a.instructorId === b.instructorId) why.push(`Instructor: ${d.staff.find(s => s.id === a.instructorId)?.name}`)
-    a.equipment.forEach(eq => { if (b.equipment.includes(eq) && eq === 'Laptop trolley') why.push(`Equipment: ${eq}`) })
     if (why.length) { (out[a.id] ??= []).push(...why); (out[b.id] ??= []).push(...why) }
   }
+  // Stock-tracked equipment: a day is overbooked when the sessions using it together need more units than are held.
+  for (const [id, why] of Object.entries(stockClashes(d.sessions))) (out[id] ??= []).push(...why)
   return out
 }

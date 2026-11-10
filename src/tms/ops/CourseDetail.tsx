@@ -11,7 +11,7 @@ import type { Session } from '../../shared/types'
 import { useOps, defaultCourseExtra } from './opsStore'
 import { CurriculumEditor, PricingEditor } from './CourseEditors'
 import { SessionFormModal } from './SessionForm'
-import { VENUES } from './logic'
+import { defaultVenue } from '../resources/registry'
 import { downloadCsv } from './download'
 import './ops.css'
 
@@ -44,7 +44,7 @@ export default function CourseDetail() {
   const prereqs = d.courses.filter(c => extra.prereqs.includes(c.id))
   const dependents = d.courses.filter(c => (useOps.getState().course[c.id]?.prereqs ?? []).includes(course.id))
   const togglePrereq = (cid: string, on: boolean) => setCourse(course.id, { ...extra, prereqs: on ? [...extra.prereqs, cid] : extra.prereqs.filter(x => x !== cid) })
-  const newSession = (): Session => ({ id: `x-${Date.now()}`, courseId: course.id, start: today(), venue: VENUES[0], instructorId: 's3', capacity: 12, equipment: [], status: 'Scheduled' })
+  const newSession = (): Session => ({ id: `x-${Date.now()}`, courseId: course.id, start: today(), venue: defaultVenue(), instructorId: 's3', capacity: 12, equipment: [], status: 'Scheduled' })
 
   return (
     <>

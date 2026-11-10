@@ -8,7 +8,8 @@ import { fmtDate, money, today } from '../shared/format'
 import { seatsTaken } from '../shared/calc'
 import type { Course, Session } from '../shared/types'
 import { SessionFormModal } from './ops/SessionForm'
-import { SKILL_AREAS, VENUES } from './ops/logic'
+import { SKILL_AREAS } from './ops/logic'
+import { defaultVenue } from './resources/registry'
 import { downloadCsv } from './ops/download'
 import './ops/ops.css'
 
@@ -28,7 +29,7 @@ export default function Courses() {
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'code', dir: 1 })
 
   const newCourse = () => ({ id: `k-${Date.now()}`, code: '', title: '', category: SKILL_AREAS[0], soft: false, price: 0, hours: 8, status: 'Draft' as const, description: '', skills: [], skillsText: '' })
-  const newSession = (courseId: string): Session => ({ id: `x-${Date.now()}`, courseId, start: today(), venue: VENUES[0], instructorId: 's3', capacity: 12, equipment: [], status: 'Scheduled' })
+  const newSession = (courseId: string): Session => ({ id: `x-${Date.now()}`, courseId, start: today(), venue: defaultVenue(), instructorId: 's3', capacity: 12, equipment: [], status: 'Scheduled' })
 
   const info = (c: Course) => {
     const ss = d.sessions.filter(s => s.courseId === c.id && s.status !== 'Cancelled')

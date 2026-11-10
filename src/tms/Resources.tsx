@@ -1,13 +1,16 @@
 import { Fragment, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Button } from '@fluentui/react-components'
-import { useStore } from '../shared/store'
+import { Button, Tab, TabList } from '@fluentui/react-components'
+import { useStore, useCtx } from '../shared/store'
 import { PageHeader, Card, Stat } from '../shared/ui'
 import { clashes } from '../shared/calc'
 import { addDays, fmtShort, parse, today } from '../shared/format'
 import type { Session } from '../shared/types'
 import { useOps } from './ops/opsStore'
-import { EQUIPMENT_ITEMS, occupancy, workdaysFrom } from './ops/logic'
+import { occupancy, workdaysFrom } from './ops/logic'
+import { useResources, isOnline } from './resources/registry'
+import { unitsFor } from './resources/stock'
+import ManageResources from './resources/ManageResources'
 import { ResolveClashModal } from './ops/ResolveClash'
 import './ops/ops.css'
 
@@ -24,11 +27,17 @@ export default function Resources() {
   const [off, setOff] = useState(0)
   const [type, setType] = useState<Type>('all')
   const [resolve, setResolve] = useState(false)
+  const [tab, setTab] = useState<'plan' | 'manage'>('plan')
+  const { persona } = useCtx()
+  const canManage = persona === 'admin' || persona === 'all'
+  const registry = useResources(s => s.venues)
+  const registryEq = useResources(s => s.equipment)
   const days = Array.from({ length: 14 }, (_, i) => addDays(today(), off + i))
   const cl = clashes(d)
   const instructors = d.staff.filter(s => s.role === 'instructor')
-  const venues = Array.from(new Set(d.sessions.map(s => s.venue))).filter(v => !v.startsWith('Online'))
-  const equipment = Array.from(new Set([...EQUIPMENT_ITEMS, ...d.sessions.flatMap(s => s.equipment)]))
+  // The register is the source of truth; anything a past session used that has since been deleted is still shown so history is not hidden.
+  const venues = Array.from(new Set([...registry.map(v => v.name), ...d.sessions.map(s => s.venue)])).filter(v => !isOnline(v))
+  const equipment = Array.from(new Set([...registryEq.map(e => e.name), ...d.sessions.flatMap(s => s.equipment)]))
   type Row = { label: string; group: Exclude<Type, 'all'>; match: (s: Session) => boolean; instId?: string }
   const rows: Row[] = [
     ...instructors.map(i => ({ label: i.name, group: 'Instructors' as const, instId: i.id, match: (s: Session) => s.instructorId === i.id })),
@@ -52,7 +61,9 @@ export default function Resources() {
     const b = busyDays(s => s.equipment.includes(e))
     const inUseToday = b.has(today())
     const next = days.find(x => x >= today() && b.has(x))
-    return { e, inUseToday, next, booked: horizon.filter(x => b.has(x)).length }
+    const stock = registryEq.find(r => r.name === e)?.quantity ?? 0
+    const unitsToday = live.filter(s => s.start === today()).reduce((a, s) => a + unitsFor(s, e), 0)
+    return { e, inUseToday, next, booked: horizon.filter(x => b.has(x)).length, stock, unitsToday }
   })
 
   return (
@@ -61,6 +72,9 @@ export default function Resources() {
         actions={<>
           <Button onClick={() => setOff(off - 14)}>Previous 2 weeks</Button><Button onClick={() => setOff(0)}>Today</Button><Button onClick={() => setOff(off + 14)}>Next 2 weeks</Button>
           <Button appearance="primary" disabled={clashCount === 0} onClick={() => setResolve(true)}>Resolve clashes{clashCount ? ` (${clashCount})` : ''}</Button></>} />
+      {canManage && <TabList selectedValue={tab} onTabSelect={(_, x) => setTab(x.value as 'plan' | 'manage')} style={{ marginBottom: 16 }}><Tab value="plan">Calendar and load</Tab><Tab value="manage">Manage resources</Tab></TabList>}
+      {tab === 'manage' && canManage && <ManageResources />}
+      {(tab === 'plan' || !canManage) && <>
       {clashCount > 0 && <div className="callout" role="alert" style={{ marginBottom: 16 }}>⚠ {clashCount} sessions are involved in resource clashes across the whole schedule. Red cells show them. <Button size="small" appearance="transparent" onClick={() => setResolve(true)}>Open the resolve assistant</Button></div>}
       <div className="grid c4" style={{ marginBottom: 16 }}>
         <Stat label="Sessions in clash" value={clashCount} hint="Whole schedule" />
@@ -115,12 +129,13 @@ export default function Resources() {
         {(type === 'all' || type === 'Equipment') && (
           <Card title="Equipment availability">
             <table className="tbl"><tbody>{eq.map(x => (
-              <tr key={x.e}><td>{x.e}</td><td><span className={`ops-pill ${x.inUseToday ? 'warn' : 'ok'}`}>{x.inUseToday ? 'In use today' : 'Available today'}</span></td>
+              <tr key={x.e}><td>{x.e}</td><td><span className={`ops-pill ${x.inUseToday ? 'warn' : 'ok'}`}>{x.stock > 0 ? `${x.unitsToday} of ${x.stock} in use today` : x.inUseToday ? 'In use today' : 'Available today'}</span></td>
                 <td className="muted small">{x.next && !x.inUseToday ? `Next use ${fmtShort(x.next)}` : `${x.booked} days booked`}</td></tr>
             ))}</tbody></table>
           </Card>
         )}
       </div>
+      </>}
       <ResolveClashModal open={resolve} onClose={() => setResolve(false)} />
     </>
   )

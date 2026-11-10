@@ -230,9 +230,10 @@ Recommendation engine (`recommend()` in `tms/ops/logic.ts`):
 |---|---|---|
 | Maintain courses | Admin | Course has code, category, soft/technical flag, price (ex VAT), hours, status Active / Draft / Retired, skills, curriculum. Only Active courses can be requested by clients, bulk-added, or recommended. |
 | Schedule a session | Admin | Course (not Retired), date, venue, instructor, capacity, equipment, status Scheduled / Completed / Cancelled. Capacity must be a whole number of at least 1 and **cannot drop below seats already booked**. |
-| Conflict detection | System | Another non-cancelled session **on the same date** conflicts if: same venue (online excluded), same instructor, both need the Laptop trolley, or the instructor marked that date unavailable. Equipment items: Projector, Laptop trolley, First aid manikins, Harness kit. |
+| Conflict detection | System | Another non-cancelled session **on the same date** conflicts if: same venue (online excluded), same instructor, together need more units of a **stock-tracked** equipment item than are held (see Venues and equipment below; by default the Laptop trolley is 1 unit and Loan laptops are 16), the instructor marked that date unavailable, or the venue or an equipment item is **out of service**. Default equipment: Projector, Laptop trolley, First aid manikins, Harness kit, Loan laptops. |
 | Resolve clashes | Admin | Suggestion engine offers alternative free venues, free instructors, and up to 5 free **weekdays** within 21 days either side (never in the past), plus "Release laptop trolley". One click applies the fix and logs it. |
 | Calendar | Admin / Instructor | Month, week, agenda views; drag to reschedule. Clashes highlighted red. Resource occupancy = share of working days with a session. |
+| Venues and equipment | Admin | **Resources -> Manage resources** is the register of bookable venues (name, city, seats, status, notes) and equipment (name, sharing, status, notes); instructors stay under Facilitators. Names need 3 or more characters and must be unique (ignoring case); venue seats are a whole number of at least 1. A venue name starting with "Online" never clashes. Equipment has **units in stock** (a batch, such as 16 laptops; 0 means not tracked and never clashes). A session says how many units it needs (1 by default), and a day clashes when the sessions using the item together need more than the stock. **Add a batch** pastes many items at once as `name, quantity` lines; valid lines are added, and names already in the register are rejected. Stock cannot be reduced below the most that upcoming sessions already need on one day. **Out of service** items cannot be picked for new sessions and raise a conflict on sessions that already use them. **Renaming** updates every session (including its unit counts) and the venue on quotes that used the old name. **Delete is blocked** while upcoming sessions, or open Draft/Sent quotes for a venue, use it; past sessions keep the name. Every add, edit and removal writes an activity-feed entry. Session capacity above a venue's seats shows a note. |
 | Facilitators | Admin | Add, edit, delete instructors. Deleting one with upcoming sessions or quotes **requires choosing a replacement**, then reassigns upcoming sessions and their quotes. The Instructor persona's facilitator cannot be deleted. |
 
 ### 3.5 Running a class (attendance to certificate)
@@ -787,7 +788,7 @@ Account types an administrator can create: Administrator, Finance, Instructor, C
 | Seed dates | Anchored to the first time the app opens, then stored; Reset demo re-anchors to today. |
 | Activity feed | Almost every write process appends a line (opportunity moves, quote status, bookings, certificates, credit notes, resends, assignments, user changes). It is the source for the dashboard feed and part of the audit trail. |
 | Notifications | Role-specific bell items (overdue invoices, deadlines, pending introductions, clashes). |
-| Persistence | Browser `localStorage`, one store per area (main, money, ops, client, LMS, B2C, talent, admin settings, facilitators, course surveys). **Reset demo** clears them all via a reset registry. |
+| Persistence | Browser `localStorage`, one store per area (main, money, ops, client, LMS, B2C, talent, admin settings, facilitators, resource register, course surveys). **Reset demo** clears them all via a reset registry. |
 | Immutability pattern | Mutations clone the data object (`structuredClone`) then replace it; side effects such as activity log entries go through the same helper. |
 | Tours | Eleven scripted stories that switch persona and screen: Opportunity to invoice, A self-paying learner, Talent connection and ringfencing, An instructor's day, How access works, Pre- and post-course surveys, A client books training, Needs analysis to quote, Assign and chase compliance, Getting paid, Reschedule or cancel a booking. |
 
@@ -830,7 +831,7 @@ Not a gap after review: client booking requests do carry through to quoting. The
 | Pipeline | Stage age warning / bad | over 14 / over 30 days |
 | Quotes | Default validity | 30 days; warning at 7 days or fewer |
 | Quotes | Terms minimum | 10 characters |
-| Scheduling | Clash keys | Same date plus venue, instructor, Laptop trolley, or instructor unavailable |
+| Scheduling | Clash keys | Same date plus venue, instructor, units needed above stock for tracked equipment (Laptop trolley 1, Loan laptops 16 by default), or instructor unavailable; plus out-of-service venue or equipment |
 | Scheduling | Suggest dates | Up to 5 weekdays, 21-day horizon |
 | Delivery | Class-list pass mark | 50% (plus attendance); constant `CLASS_PASS_MARK` |
 | Delivery | Low fill alert | under 40% full, next 21 days |
