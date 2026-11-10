@@ -1,0 +1,9 @@
+.sv-banner { background: var(--brandsoft); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; font-size: 13px; }
+.sv-banner code { word-break: break-all; font-size: 12px; }
+.sv-q { border: 0; padding: 0; margin: 0 0 14px; }
+.sv-q legend { font-weight: 600; padding: 0; margin-bottom: 4px; }
+.sv-req { color: #c50f1f; }
+.lms-pill.sv-done { background: #dff3e6; color: #0b3d1c; }
+:root[data-theme='dark'] .lms-pill.sv-done { background: #1f4a2c; color: #c9f0d5; }
+.sv-gate { text-align: center; padding: 28px 12px; }
+.sv-quote { margin: 0 0 8px; padding: 6px 10px; border-left: 3px solid var(--line); font-size: 13px; }

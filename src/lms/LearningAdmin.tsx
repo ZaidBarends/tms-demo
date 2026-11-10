@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Button, Tab, TabList } from '@fluentui/react-components'
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useStore } from '../shared/store'
@@ -9,15 +10,23 @@ import { downloadCsv } from './csv'
 import AssignWizard from './admin/AssignWizard'
 import Matrix from './admin/Matrix'
 import Overdue from './admin/Overdue'
+import BookingRequests from './admin/BookingRequests'
+import SurveyResults from './admin/SurveyResults'
+import { useB2c } from '../b2c/b2cStore'
 import { dueRows, staffLearners, teamKey, teamName } from './admin/logic'
 import './lms.css'
 
-type Tabv = 'overview' | 'assign' | 'matrix' | 'overdue'
+type Tabv = 'overview' | 'assign' | 'matrix' | 'overdue' | 'requests' | 'surveys'
 
 export default function LearningAdmin() {
   const d = useStore(s => s.data)
   const assignments = useLms(s => s.assignments)
+  const openRequests = useB2c(s => s.requests.filter(r => r.status === 'Requested').length)
+  const [params] = useSearchParams()
   const [tab, setTab] = useState<Tabv>('overview')
+  // Deep link (used by guided tours): /learning-admin?tab=surveys
+  const wanted = params.get('tab')
+  useEffect(() => { if (wanted && ['overview', 'assign', 'matrix', 'overdue', 'requests', 'surveys'].includes(wanted)) setTab(wanted as Tabv) }, [wanted])
   const [pending, setPending] = useState<string | null>(null)
 
   const staffIds = new Set(staffLearners(d).map(l => l.id))
@@ -37,7 +46,7 @@ export default function LearningAdmin() {
       <PageHeader id="learning-admin" title="Learning admin" subtitle="Assign courses, set deadlines, track compliance and chase overdue learning"
         actions={<Button onClick={() => downloadCsv('completion-by-team.csv', [['Team', 'Enrolments', 'Completed', 'In progress', 'Booked', 'Completion %'], ...byTeam.map(t => [t.name, t.total, t.Completed, t['In progress'], t.Booked, t.total ? Math.round((t.Completed / t.total) * 100) : 0])])}>Export CSV</Button>} />
       <TabList selectedValue={tab} onTabSelect={(_, x) => setTab(x.value as Tabv)} style={{ marginBottom: 16 }}>
-        <Tab value="overview">Overview</Tab><Tab value="assign">Assign a course</Tab><Tab value="matrix">Compliance matrix</Tab><Tab value="overdue">Overdue{overdue ? ` (${overdue})` : ''}</Tab>
+        <Tab value="overview">Overview</Tab><Tab value="assign">Assign a course</Tab><Tab value="matrix">Compliance matrix</Tab><Tab value="overdue">Overdue{overdue ? ` (${overdue})` : ''}</Tab><Tab value="requests">Booking requests{openRequests ? ` (${openRequests})` : ''}</Tab><Tab value="surveys">Surveys</Tab>
       </TabList>
 
       {tab === 'overview' && (
@@ -78,6 +87,8 @@ export default function LearningAdmin() {
       )}
       {tab === 'assign' && <AssignWizard />}
       {tab === 'matrix' && <Matrix onNudge={id => { setPending(id); setTab('overdue') }} />}
+      {tab === 'requests' && <BookingRequests />}
+      {tab === 'surveys' && <SurveyResults />}
       {tab === 'overdue' && <Overdue pending={pending} clear={() => setPending(null)} />}
     </>
   )

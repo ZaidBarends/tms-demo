@@ -12,6 +12,8 @@ export interface Settings {
   hours: Record<'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun', Hours>
   closures: string[]
   branding: { primary: string; accent: string; letterhead: string }
+  /** Pre- and post-course surveys are Microsoft Forms; these are the links embedded in the site. */
+  surveys: { preUrl: string; postUrl: string; requirePre: boolean; requirePost: boolean }
 }
 
 export const NOTIFICATIONS: { id: string; label: string; hint: string }[] = [
@@ -24,6 +26,12 @@ export const NOTIFICATIONS: { id: string; label: string; hint: string }[] = [
   { id: 'digest', label: 'Weekly management digest', hint: 'Monday summary of pipeline, fill rates and cash.' },
 ]
 
+const seedSurveys: Settings['surveys'] = {
+  preUrl: 'https://forms.office.com/r/PreCourseDemo?course={code}&enrolment={enrolment}',
+  postUrl: 'https://forms.office.com/r/PostCourseDemo?course={code}&enrolment={enrolment}',
+  requirePre: false, requirePost: true,
+}
+
 export const seedSettings = (): Settings => ({
   profile: { name: 'Zimele Technologies (Pty) Ltd', tradingAs: 'Zimele Academy', regNo: '2014/218730/07', vatNo: '4410298765', address: 'Building 11, Stanford Office Park, 12 Bauhinia Street, Highveld, Centurion, 0169', email: 'accounts@zimeletechnologies.com', phone: '086 999 0229', website: 'www.zimeletechnologies.com' },
   banking: { bank: 'Cape Commercial Bank', accountName: 'Zimele Technologies (Pty) Ltd', accountNo: '1029384756', branch: '470010', accountType: 'Business current' },
@@ -35,13 +43,18 @@ export const seedSettings = (): Settings => ({
   },
   closures: ['2026-12-16 Day of Reconciliation (observed)', '2026-12-25 Christmas Day', '2026-12-26 Day of Goodwill'],
   branding: { primary: '#597f2d', accent: '#92ca61', letterhead: 'Training that moves careers forward' },
+  surveys: { ...seedSurveys },
 })
 
 interface SettingsState { settings: Settings; save: (s: Settings) => void }
 export const useSettings = create<SettingsState>()(
   persist(
     set => ({ settings: seedSettings(), save: settings => set({ settings }) }),
-    { name: 'admin-settings-v1', version: 1, storage: safeStorage() },
+    {
+      name: 'admin-settings-v1', version: 2, storage: safeStorage(),
+      // v1 had no survey settings; keep everything else the admin saved.
+      migrate: (state: any) => ({ ...state, settings: { ...state.settings, surveys: state.settings?.surveys ?? { ...seedSurveys } } }),
+    },
   ),
 )
 registerReset(() => useSettings.setState({ settings: seedSettings() }))

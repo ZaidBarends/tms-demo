@@ -10,6 +10,10 @@ import { buildLessons } from './content'
 import { recommend, lessonIndexFor } from './recommend'
 import { leaderboard } from './gamify'
 import { BadgeStrip, DeadlineAlerts, MiniLeaderboard, ProgressDonut, Recommended, StreakGoalCard, UpcomingSessions, WeeklyBars } from './dash/DashParts'
+import SurveyStatus from './surveys/SurveyStatus'
+import { useSurveys } from './surveys/surveyStore'
+import { findResponse } from './surveys/surveyLogic'
+import { useSettings } from '../admin/settingsStore'
 import { CertificateModal, type CertProps } from './CertificateView'
 import { Ring } from './widgets'
 import './lms.css'
@@ -23,6 +27,8 @@ export default function MyLearning() {
   const talent = useStore(x => x.data.talent.find(t => t.learnerId === learnerId))
   const [filter, setFilter] = useState<Filter>('all')
   const [cert, setCert] = useState<CertProps | null>(null)
+  const responses = useSurveys(x => x.responses)
+  const requirePost = useSettings(x => x.settings.surveys.requirePost)
 
   const type = learner?.type ?? 'b2c'
   const isB2c = type === 'b2c'
@@ -114,7 +120,7 @@ export default function MyLearning() {
         </TabList>}>
         {rows.length === 0 ? <EmptyState title={es.length ? 'No courses in this view' : 'No courses yet'} text="Courses you book or are assigned will show up here." action={<Link to="/catalogue">Browse the catalogue</Link>} /> : (
           <div className="tbl-wrap"><table className="tbl">
-            <thead><tr><th>Course</th><th>Paid by</th><th style={{ width: 200 }}>Progress</th><th>Deadline</th><th>Status</th><th /></tr></thead>
+            <thead><tr><th>Course</th><th>Paid by</th><th style={{ width: 200 }}>Progress</th><th>Deadline</th><th>Status</th><th>Surveys</th><th /></tr></thead>
             <tbody>{rows.map(e => {
               const c = d.courses.find(x => x.id === e.courseId)!
               const left = e.deadline ? daysBetween(today(), e.deadline) : null
@@ -125,6 +131,7 @@ export default function MyLearning() {
                   <td><Progress value={e.progress} /><span className="small muted">{e.progress}%</span></td>
                   <td>{e.deadline ? <>{fmtDate(e.deadline)} {left !== null && left < 14 && e.status !== 'Completed' && <span className="err">({left < 0 ? 'overdue' : `${left} days`})</span>}</> : '–'}</td>
                   <td><Status s={e.status} /></td>
+                  <td><SurveyStatus enrolId={e.id} /></td>
                   <td><Link to={`/learn/${e.id}`}><Button size="small" appearance={e.status === 'Completed' ? 'secondary' : 'primary'}>{e.status === 'Completed' ? 'Review' : e.progress > 0 ? 'Continue' : 'Start'}</Button></Link></td>
                 </tr>
               )
@@ -139,11 +146,13 @@ export default function MyLearning() {
             <ul className="lms-list">{certs.map(c => {
               const left = c.expires ? daysBetween(today(), c.expires) : null
               const title = d.courses.find(x => x.id === c.courseId)?.title ?? ''
+              const en = es.find(x => x.certificateId === c.id)
+              const locked = requirePost && !!en && !findResponse(responses, en.id, 'post')
               return (
                 <li key={c.id}>
                   <span><b>{title}</b><div className="small muted">{c.id} · issued {fmtDate(c.issued)} · {c.expires ? `expires ${fmtDate(c.expires)}` : 'no expiry'}</div>
                     {left !== null && left < 120 && <span className={`lms-pill ${left < 30 ? 'bad' : 'warn'}`}>{left < 0 ? 'Expired' : `Expires in ${left} days`}</span>}</span>
-                  <Button size="small" onClick={() => setCert({ name: learner?.name ?? '', course: title, id: c.id, issued: c.issued, expires: c.expires })}>View</Button>
+                  <Button size="small" disabled={locked} title={locked ? 'Answer the post-course survey to view this certificate' : undefined} onClick={() => setCert({ name: learner?.name ?? '', course: title, id: c.id, issued: c.issued, expires: c.expires })}>View</Button>
                 </li>
               )
             })}</ul>

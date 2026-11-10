@@ -11,6 +11,11 @@ import VideoView from './player/VideoView'
 import QuizView from './player/QuizView'
 import SidePanel from './player/SidePanel'
 import Completion from './player/Completion'
+import SurveyDialog from './surveys/SurveyDialog'
+import { useSurveys } from './surveys/surveyStore'
+import { findResponse } from './surveys/surveyLogic'
+import { sendSurveyEmail } from './surveys/surveyActions'
+import { useSettings } from '../admin/settingsStore'
 import './lms.css'
 
 export default function Player() {
@@ -35,6 +40,9 @@ function Inner({ enrolId }: { enrolId: string }) {
   const quiz = useMemo(() => buildQuiz(course), [course])
   const resources = useMemo(() => buildResources(course), [course])
   const completed = e.status === 'Completed'
+  const surveyCfg = useSettings(s => s.settings.surveys)
+  const hasPre = useSurveys(s => !!findResponse(s.responses, e.id, 'pre'))
+  const [preOpen, setPreOpen] = useState(false)
 
   const baseline = completed ? lessons.length : Math.floor((e.progress / 100) * lessons.length)
   const doneIds = new Set([...(lms.done[e.id] ?? []), ...lessons.slice(0, baseline).map(l => l.id)])
@@ -71,6 +79,7 @@ function Inner({ enrolId }: { enrolId: string }) {
     st.award(learnerId, `Passed the ${course.code} knowledge check (${s.pct}%)`, s.pct === 100 ? 40 : 25)
     useStore.getState().setResult(e.id, s.pct)
     useStore.getState().completeCourse(e.id)
+    sendSurveyEmail(e.id, 'post')
     setCelebrate(true)
   }
   const jump = (key: string) => {
@@ -85,12 +94,30 @@ function Inner({ enrolId }: { enrolId: string }) {
   const cert = e.certificateId ? d.certificates.find(c => c.id === e.certificateId) : undefined
 
   const modules = Array.from(new Set(lessons.map(l => l.module)))
+  // Pre-course survey is a gate only when the administrator requires it and the learner has not started.
+  const preGate = surveyCfg.requirePre && !hasPre && !completed && doneIds.size === 0
   const canAdvance = !!lesson && (doneIds.has(lesson.id) || (lesson.kind === 'slides' && seen))
 
   return (
     <>
       <PageHeader id="player" title={course.title} subtitle={`${course.code} · ${doneCount} of ${lessons.length} steps complete`} actions={<Link to="/my-learning"><Button>Back to My learning</Button></Link>} />
       <div className="row" style={{ marginBottom: 16 }}><div style={{ flex: 1 }}><Progress value={e.progress} /></div><b>{e.progress}%</b></div>
+      {!completed && !hasPre && !preGate && (
+        <div className="callout row" style={{ marginBottom: 16, justifyContent: 'space-between' }}>
+          <span>Before you go further: a two-minute pre-course survey helps us measure what you gain from this course.</span>
+          <Button size="small" onClick={() => setPreOpen(true)}>Pre-course survey</Button>
+        </div>
+      )}
+      {preOpen && <SurveyDialog enrolId={e.id} kind="pre" onClose={() => setPreOpen(false)} />}
+      {preGate ? (
+        <Card title="Before you start">
+          <div className="sv-gate">
+            <h3 style={{ marginTop: 0 }}>Complete the pre-course survey</h3>
+            <p className="muted">Your organisation asks every learner to answer a short survey before the first lesson. It takes about two minutes.</p>
+            <Button appearance="primary" onClick={() => setPreOpen(true)}>Open the pre-course survey</Button>
+          </div>
+        </Card>
+      ) : (
       <div className="lms-player">
         <nav className="lms-toc" aria-label="Course outline">
           {modules.map(m => (
@@ -135,12 +162,13 @@ function Inner({ enrolId }: { enrolId: string }) {
             </Card>
           )}
           {idx === lessons.length && (completed
-            ? <Completion course={course} learnerName={learner?.name ?? ''} cert={cert} score={lms.quizBest[e.id] ?? e.result} celebrate={celebrate} next={nextCourse && { id: nextCourse.id, title: nextCourse.title }} />
+            ? <Completion enrolId={e.id} course={course} learnerName={learner?.name ?? ''} cert={cert} score={lms.quizBest[e.id] ?? e.result} celebrate={celebrate} next={nextCourse && { id: nextCourse.id, title: nextCourse.title }} />
             : <EmptyState title="Not complete yet" text="Pass the knowledge check to unlock your certificate." />)}
           <SidePanel enrolId={e.id} lesson={lesson} lessons={lessons} notes={lms.notes} setNote={(lid, t) => lms.setNote(e.id, lid, t)}
             bookmarks={bookmarks} jump={jump} removeBookmark={toggleMark} resources={resources} courseTitle={course.title} />
         </div>
       </div>
+      )}
     </>
   )
 }

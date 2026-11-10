@@ -3,6 +3,7 @@ import { Button, Switch } from '@fluentui/react-components'
 import { PageHeader, Card } from '../shared/ui'
 import { FText } from '../shared/fields'
 import { VAT_RATE } from '../shared/format'
+import { checkFormsUrl } from '../lms/surveys/surveyLogic'
 import { NOTIFICATIONS, formatNumber, isHex, useSettings } from './settingsStore'
 import type { Settings as S } from './settingsStore'
 import './admin.css'
@@ -20,6 +21,8 @@ function validate(s: S) {
   if (s.numbering.invoicePad < 3 || s.numbering.invoicePad > 8) e.invoicePad = 'Use 3 to 8 digits'
   if (s.numbering.paymentTermsDays < 0 || s.numbering.paymentTermsDays > 120) e.terms = 'Payment terms: 0 to 120 days'
   DAYS.forEach(k => { const h = s.hours[k]; if (h.open && h.start >= h.end) e[`h${k}`] = `${k}: closing time must be after opening` })
+  const pu = checkFormsUrl(s.surveys.preUrl); if (pu) e.preUrl = pu
+  const qu = checkFormsUrl(s.surveys.postUrl); if (qu) e.postUrl = qu
   if (!isHex(s.branding.primary)) e.primary = 'Use a hex colour like #597f2d'
   if (!isHex(s.branding.accent)) e.accent = 'Use a hex colour like #92ca61'
   return e
@@ -89,6 +92,17 @@ export default function Settings() {
               <Switch checked={!!d.notifications[n.id]} onChange={(_, x) => setD(p => ({ ...p, notifications: { ...p.notifications, [n.id]: x.checked } }))} aria-label={n.label} />
             </div>
           ))}
+        </Card>
+        <Card title="Course surveys (Microsoft Forms)">
+          <div className="form">
+            <FText label="Pre-course form link" value={d.surveys.preUrl} onChange={v => set('surveys', { preUrl: v })} error={errs.preUrl} hint="Embedded for learners before the course" />
+            <FText label="Post-course form link" value={d.surveys.postUrl} onChange={v => set('surveys', { postUrl: v })} error={errs.postUrl} hint="Embedded for learners after the course" />
+          </div>
+          <div className="muted small" style={{ margin: '8px 0' }}>Merge fields filled in per learner so the form can be pre-filled: {'{code}'}, {'{course}'}, {'{enrolment}'}, {'{learner}'} (email).</div>
+          <div className="adm-toggle"><div><b>Require pre-course survey</b><div className="muted small">Online learners complete it before the first lesson.</div></div>
+            <Switch checked={d.surveys.requirePre} onChange={(_, x) => set('surveys', { requirePre: x.checked })} aria-label="Require pre-course survey" /></div>
+          <div className="adm-toggle"><div><b>Require post-course survey for certificate</b><div className="muted small">The certificate is issued, but the learner can view or print it only after answering.</div></div>
+            <Switch checked={d.surveys.requirePost} onChange={(_, x) => set('surveys', { requirePost: x.checked })} aria-label="Require post-course survey for certificate" /></div>
         </Card>
         <Card title="Working hours calendar">
           {DAYS.map(k => (

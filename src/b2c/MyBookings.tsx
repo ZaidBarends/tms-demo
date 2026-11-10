@@ -10,6 +10,7 @@ import { useB2c } from './b2cStore'
 import BookingCalendar, { type CalEvent } from './BookingCalendar'
 import { DocModal, RequestDialog } from './BookingDialogs'
 import type { Enrolment, Receipt } from '../shared/types'
+import SurveyStatus from '../lms/surveys/SurveyStatus'
 import './b2c.css'
 
 export default function MyBookings() {
@@ -28,7 +29,7 @@ export default function MyBookings() {
   const invoices = d.invoices.filter(i => i.learnerId === learnerId)
   const title = (id: string) => d.courses.find(c => c.id === id)?.title ?? ''
   const sess = (e: Enrolment) => d.sessions.find(s => s.id === e.sessionId)
-  const reqFor = (e: Enrolment) => requests.find(r => r.enrolId === e.id)
+  const reqFor = (e: Enrolment) => requests.find(r => r.enrolId === e.id && r.status === 'Requested')
   const events: CalEvent[] = mine.filter(e => sess(e)).map(e => ({ id: e.id, date: sess(e)!.start, title: title(e.courseId), venue: sess(e)!.venue, done: e.status === 'Completed' }))
   const dayEvents = day ? mine.filter(e => sess(e)?.start === day) : []
   const spendByMonth = Object.entries(receipts.reduce<Record<string, number>>((m, r) => { const k = monthKey(r.date); m[k] = (m[k] ?? 0) + r.amount; return m }, {})).sort().map(([k, v]) => ({ month: monthLabel(k), Spend: Math.round(v) }))
@@ -41,6 +42,7 @@ export default function MyBookings() {
         {s && <Button size="small" onClick={() => downloadIcs(title(e.courseId), s.start, s.venue)}>Add to calendar</Button>}
         {s && e.status === 'Booked' && (rq ? <span className="lms-pill warn">{rq.type} requested</span> : <Button size="small" onClick={() => setChange(e)}>Reschedule or cancel</Button>)}
         {!s && e.status === 'Booked' && !rq && <Button size="small" onClick={() => setChange(e)}>Cancel</Button>}
+        <SurveyStatus enrolId={e.id} only="pre" />
         <Link to={`/learn/${e.id}`}><Button size="small" appearance="primary">{e.progress > 0 ? 'Continue' : 'Open'}</Button></Link>
       </div>
     )
@@ -89,7 +91,7 @@ export default function MyBookings() {
           <Card title="Past bookings">
             {past.length === 0 ? <EmptyState title="No completed courses yet" /> : (
               <table className="tbl"><tbody>{past.map(e => (
-                <tr key={e.id}><td><b>{title(e.courseId)}</b></td><td>{e.certificateId ?? '–'}</td><td><Status s="Completed" /></td><td><Link to={`/learn/${e.id}`}>Review</Link></td></tr>
+                <tr key={e.id}><td><b>{title(e.courseId)}</b></td><td>{e.certificateId ?? '–'}</td><td><Status s="Completed" /></td><td><SurveyStatus enrolId={e.id} only="post" /></td><td><Link to={`/learn/${e.id}`}>Review</Link></td></tr>
               ))}</tbody></table>
             )}
           </Card>
