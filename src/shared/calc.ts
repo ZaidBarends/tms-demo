@@ -29,6 +29,6 @@ export function clashes(d: Data): Record<string, string[]> {
     if (why.length) { (out[a.id] ??= []).push(...why); (out[b.id] ??= []).push(...why) }
   }
   // Stock-tracked equipment: a day is overbooked when the sessions using it together need more units than are held.
-  for (const [id, why] of Object.entries(stockClashes(d.sessions))) (out[id] ??= []).push(...why)
+  for (const [id, why] of Object.entries(stockClashes(d.sessions, d.enrolments))) (out[id] ??= []).push(...why)
   return out
 }

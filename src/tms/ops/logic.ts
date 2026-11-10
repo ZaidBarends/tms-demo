@@ -1,7 +1,7 @@
 import type { Course, Data, Opportunity, Quote, Stage } from '../../shared/types'
 import { addDays, daysBetween, iso, parse, today } from '../../shared/format'
 import { isOnline, isOutOfService, stockOf, venueNames } from '../resources/registry'
-import { unitsFor } from '../resources/stock'
+import { bookedBySession, unitsFor } from '../resources/stock'
 
 /** Classroom pass mark (with attendance). The online knowledge check uses a stricter 70% (lms/content.ts). */
 export const CLASS_PASS_MARK = 50
@@ -55,7 +55,8 @@ export function conflictsFor(d: Data, c: Candidate, unavailable: Record<string, 
     const stock = stockOf(eq)
     if (stock <= 0) continue
     const others = d.sessions.filter(s => s.id !== c.id && s.status !== 'Cancelled' && s.start === c.start && s.equipment.includes(eq))
-    const need = unitsFor(c, eq) + others.reduce((a, s) => a + unitsFor(s, eq), 0)
+    const booked = bookedBySession(d.enrolments)
+    const need = unitsFor(c, eq, c.id ? booked[c.id] ?? 0 : 0) + others.reduce((a, s) => a + unitsFor(s, eq, booked[s.id] ?? 0), 0)
     if (need > stock) out.push({ kind: 'equipment', text: others.length ? `${eq}: ${need} needed on ${c.start} but only ${stock} in stock (also used by ${d.courses.find(k => k.id === others[0].courseId)?.code ?? 'another session'})` : `${eq}: ${need} needed but only ${stock} in stock`, withId: others[0]?.id })
   }
   if (isOutOfService('venue', c.venue)) out.push({ kind: 'resource', text: `${c.venue} is out of service` })

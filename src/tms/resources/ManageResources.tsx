@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Button } from '@fluentui/react-components'
+import { Button, Switch } from '@fluentui/react-components'
 import { useStore } from '../../shared/store'
 import { Card, EmptyState, Modal } from '../../shared/ui'
 import { FArea, FSelect, FText } from '../../shared/fields'
@@ -24,12 +24,13 @@ export default function ManageResources() {
   const [msg, setMsg] = useState<{ text: string; bad?: boolean } | null>(null)
   const [batch, setBatch] = useState<string | null>(null)
   const sessions = useStore(s => s.data.sessions)
+  const enrolments = useStore(s => s.data.enrolments)
   const batchRows = batch === null ? [] : parseBatch(batch, equipment.map(x => x.name))
   const batchGood = batchRows.filter(r => r.errors.length === 0)
   const addBatch = () => { if (batch === null) return; const r = addEquipmentBatch(batch); setMsg({ text: `${r.added} equipment item${r.added === 1 ? '' : 's'} added.` }); setBatch(null) }
 
   const newVenue = () => { setErr({}); setDraft({ kind: 'venue', isNew: true, v: { id: '', name: '', city: '', seats: 12, status: 'Available', notes: '' } }) }
-  const newEquip = () => { setErr({}); setDraft({ kind: 'equipment', isNew: true, q: { id: '', name: '', quantity: 1, status: 'Available', notes: '' } }) }
+  const newEquip = () => { setErr({}); setDraft({ kind: 'equipment', isNew: true, q: { id: '', name: '', quantity: 1, perLearner: true, status: 'Available', notes: '' } }) }
   const save = () => {
     if (!draft) return
     const e = draft.kind === 'venue' ? saveVenue(draft.v, draft.isNew) : saveEquipment(draft.q, draft.isNew)
@@ -62,7 +63,7 @@ export default function ManageResources() {
           {equipment.length === 0 ? <EmptyState title="No equipment" /> : (
             <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Item</th><th className="num">In stock</th><th>Status</th><th className="num">Upcoming</th><th /></tr></thead><tbody>
               {equipment.map(q => (
-                <tr key={q.id}><td><b>{q.name}</b>{q.notes && <div className="small muted">{q.notes}</div>}</td><td className="num">{q.quantity > 0 ? <>{q.quantity}<div className="small muted">peak need {peakDemand(sessions, q.name, today()).units}</div></> : <span className="muted small">Not tracked</span>}</td><td>{pill(q.status)}</td><td className="num">{usage('equipment', q.name).sessions}</td>
+                <tr key={q.id}><td><b>{q.name}</b>{q.notes && <div className="small muted">{q.notes}</div>}</td><td className="num">{q.quantity > 0 ? <>{q.quantity}<div className="small muted">peak need {peakDemand(sessions, enrolments, q.name, today()).units}</div></> : <span className="muted small">Not tracked</span>}{q.quantity > 0 && <div className="small muted">{q.perLearner ? 'one per learner' : 'one per session'}</div>}</td><td>{pill(q.status)}</td><td className="num">{usage('equipment', q.name).sessions}</td>
                   <td><div className="row" style={{ gap: 4 }}><Button size="small" onClick={() => { setErr({}); setDraft({ kind: 'equipment', isNew: false, q: { ...q } }) }}>Edit</Button><Button size="small" appearance="subtle" onClick={() => ask('equipment', q)}>Delete</Button></div></td></tr>
               ))}
             </tbody></table></div>
@@ -85,6 +86,8 @@ export default function ManageResources() {
             <div className="form c2">
               <div style={{ gridColumn: '1 / -1' }}><FText label="Name" value={draft.q.name} onChange={x => setDraft({ ...draft, q: { ...draft.q, name: x } })} error={err.name} hint="Renaming updates every session that uses it." /></div>
               <FText label="Units in stock" type="number" min={0} value={draft.q.quantity} onChange={x => setDraft({ ...draft, q: { ...draft.q, quantity: Number(x) } })} error={err.quantity} hint="For a batch such as 16 laptops. Sessions on the same day clash when they need more than this. 0 = not tracked." />
+              <div className="adm-toggle" style={{ borderBottom: 0, gridColumn: '1 / -1' }}><div><b>One unit per learner booked</b><div className="muted small">Sessions need as many as they have learners, unless they say otherwise. Off for a single shared item such as a trolley.</div></div>
+                <Switch checked={draft.q.perLearner} onChange={(_, x) => setDraft({ ...draft, q: { ...draft.q, perLearner: x.checked } })} aria-label="One unit per learner booked" /></div>
               <FSelect label="Status" value={draft.q.status} onChange={x => setDraft({ ...draft, q: { ...draft.q, status: x as EquipRec['status'] } })} options={['Available', 'Out of service'].map(x => ({ value: x, label: x }))} />
               <div style={{ gridColumn: '1 / -1' }}><FArea label="Notes" rows={2} value={draft.q.notes} onChange={x => setDraft({ ...draft, q: { ...draft.q, notes: x } })} /></div>
             </div>
@@ -93,11 +96,11 @@ export default function ManageResources() {
       )}
       {batch !== null && (
         <Modal open wide onClose={() => setBatch(null)} title="Add a batch of equipment" actions={<Button appearance="primary" disabled={batchGood.length === 0} onClick={addBatch}>Add {batchGood.length} item{batchGood.length === 1 ? '' : 's'}</Button>}>
-          <p className="muted small" style={{ marginTop: 0 }}>Paste one item per line as <code>name, quantity</code>, for example <code>Loan laptops, 16</code>. The quantity is how many units you hold; leave it off for one. Nothing is added until you confirm, and existing items are left alone (use Edit to change their stock).</p>
+          <p className="muted small" style={{ marginTop: 0 }}>Paste one item per line as <code>name, quantity, per learner</code>, for example <code>Loan laptops, 16, yes</code>. The quantity is how many units you hold (leave it off for one). The last column says whether a session needs one unit per learner booked (yes, the default) or just one (no). Nothing is added until you confirm, and existing items are left alone (use Edit to change their stock).</p>
           <label htmlFor="eq-batch" className="small muted">Items</label>
-          <textarea id="eq-batch" rows={6} value={batch} onChange={e => setBatch(e.target.value)} placeholder={['Loan laptops, 16', 'Flip chart stands, 8', 'Wireless microphones, 4'].join('\n')}
+          <textarea id="eq-batch" rows={6} value={batch} onChange={e => setBatch(e.target.value)} placeholder={['Loan laptops, 16, yes', 'Flip chart stands, 8, no', 'Wireless microphones, 4, no'].join('\n')}
             style={{ width: '100%', font: 'inherit', padding: 8, boxSizing: 'border-box', background: 'var(--card)', color: 'inherit', border: '1px solid var(--line)', borderRadius: 6 }} />
-          <div className="row" style={{ margin: '8px 0' }}><Button size="small" onClick={() => setBatch(['Loan laptops 2, 10', 'Flip chart stands, 8', 'Wireless microphones, 4', 'Name only'].join('\n'))}>Use an example</Button></div>
+          <div className="row" style={{ margin: '8px 0' }}><Button size="small" onClick={() => setBatch(['Loan laptops 2, 10, yes', 'Flip chart stands, 8, no', 'Wireless microphones, 4, no'].join('\n'))}>Use an example</Button></div>
           {batchRows.length > 0 && (
             <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Line</th><th>Item</th><th className="num">Quantity</th><th>Check</th></tr></thead><tbody>
               {batchRows.map(r => <tr key={r.line}><td>{r.line}</td><td>{r.name}</td><td className="num">{r.quantity || ''}</td><td>{r.errors.length ? <span className="err">{r.errors.join('; ')}</span> : <span style={{ color: '#13a10e' }}>✓ Ready</span>}</td></tr>)}

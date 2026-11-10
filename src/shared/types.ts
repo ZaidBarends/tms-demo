@@ -16,7 +16,7 @@ export interface Course {
 export interface Session {
   id: string; courseId: string; start: string; venue: string; instructorId: string
   capacity: number; equipment: string[]; status: 'Scheduled' | 'Completed' | 'Cancelled'
-  /** Units needed of stock-tracked equipment (default 1 each), e.g. { 'Loan laptops': 12 }. */
+  /** Units needed of stock-tracked equipment, e.g. { 'Loan laptops': 12 }. When an item is missing here, one per learner booked is assumed. */
   equipmentQty?: Record<string, number>
 }
 export type Payer = 'self' | 'employer' | 'internal'

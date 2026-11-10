@@ -56,6 +56,20 @@ describe('resource register', () => {
     expect(conflictsFor(useStore.getState().data, cand).some(c => c.kind === 'equipment' && /23 needed/.test(c.text))).toBe(true)
     expect(conflictsFor(useStore.getState().data, { ...cand, equipmentQty: { 'Loan laptops': 3 } }).some(c => c.kind === 'equipment')).toBe(false)
   })
+  it('per-learner items default to one unit per learner booked; a session can override', () => {
+    const d = useStore.getState().data
+    const day = '2031-06-02'
+    const mk = (id: string, extra: object = {}) => ({ id, courseId: d.courses[0].id, start: day, venue: 'Online (video call)', instructorId: id, capacity: 20, equipment: ['Loan laptops'], status: 'Scheduled' as const, ...extra })
+    const enrol = (sid: string, n: number) => Array.from({ length: n }, (_, i) => ({ id: `${sid}-${i}`, learnerId: 'l', courseId: d.courses[0].id, sessionId: sid, payer: 'self' as const, progress: 0, status: 'Booked' as const }))
+    useStore.setState(st => ({ data: { ...st.data, sessions: [mk('p1'), mk('p2')], enrolments: [...enrol('p1', 10), ...enrol('p2', 8)] } }))
+    expect(Object.keys(clashes(useStore.getState().data)).sort()).toEqual(['p1', 'p2'])
+    expect(clashes(useStore.getState().data).p1[0]).toMatch(/18 needed, 16 in stock/)
+    useStore.setState(st => ({ data: { ...st.data, sessions: [mk('p1', { equipmentQty: { 'Loan laptops': 8 } }), mk('p2')] } }))
+    expect(Object.keys(clashes(useStore.getState().data))).toEqual([])
+    const trolley = mk('t', { equipment: ['Laptop trolley'] })
+    useStore.setState(st => ({ data: { ...st.data, sessions: [trolley], enrolments: enrol('t', 12) } }))
+    expect(Object.keys(clashes(useStore.getState().data))).toEqual([])
+  })
   it('untracked equipment never clashes; one tracked unit behaves like the old exclusive item', () => {
     const d = useStore.getState().data
     const base = { courseId: d.courses[0].id, start: '2031-04-01', venue: 'Online (video call)', capacity: 5, status: 'Scheduled' as const }

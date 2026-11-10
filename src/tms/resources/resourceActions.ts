@@ -58,7 +58,7 @@ export function addEquipmentBatch(text: string): { added: number; rows: BatchRow
   const rows = parseBatch(text, st.equipment.map(x => x.name))
   const good = rows.filter(r => r.errors.length === 0)
   if (good.length) {
-    st.setEquipment([...st.equipment, ...good.map((r, i) => ({ id: uid('q') + i, name: r.name, quantity: r.quantity, status: 'Available' as const, notes: '' }))])
+    st.setEquipment([...st.equipment, ...good.map((r, i) => ({ id: uid('q') + i, name: r.name, quantity: r.quantity, perLearner: r.perLearner, status: 'Available' as const, notes: '' }))])
     useStore.getState().log(`Equipment batch added: ${good.map(r => `${r.name} x${r.quantity}`).join(', ')}`)
   }
   return { added: good.length, rows }
@@ -72,7 +72,7 @@ export function saveEquipment(q: EquipRec, isNew: boolean): Record<string, strin
     // Reducing stock may not go below what upcoming sessions already need on their busiest day.
     const old = useResources.getState().equipment.find(x => x.id === q.id)
     if (old && q.quantity < old.quantity) {
-    const peak = peakDemand(useStore.getState().data.sessions, old?.name ?? q.name, today())
+    const peak = peakDemand(useStore.getState().data.sessions, useStore.getState().data.enrolments, old?.name ?? q.name, today())
     if (peak.units > q.quantity) e.quantity = `Upcoming sessions need ${peak.units} on ${peak.date}. Reschedule or reduce them first.`
     }
   }

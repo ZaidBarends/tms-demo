@@ -63,8 +63,8 @@ function Inner({ initial, onClose, isNew, onSaved }: { initial: Session; onClose
             return (
               <span key={eq} className="row" style={{ gap: 6 }}>
                 <Checkbox label={stock > 0 ? `${eq} (${stock} in stock)` : eq} checked={on} onChange={(_, c) => setS({ ...s, equipment: c.checked ? [...s.equipment, eq] : s.equipment.filter(x => x !== eq) })} />
-                {on && stock > 0 && <input type="number" min={1} max={stock} aria-label={`Units of ${eq} needed`} value={s.equipmentQty?.[eq] ?? 1} style={{ width: 64, font: 'inherit', padding: 4, background: 'var(--card)', color: 'inherit', border: '1px solid var(--line)', borderRadius: 6 }}
-                  onChange={e => setS({ ...s, equipmentQty: { ...(s.equipmentQty ?? {}), [eq]: Math.max(1, Math.floor(Number(e.target.value) || 1)) } })} />}
+                {on && stock > 0 && <input type="number" min={1} max={stock} aria-label={`Units of ${eq} needed`} title="Leave empty to use one per learner booked" placeholder={String(Math.max(1, taken))} value={s.equipmentQty?.[eq] ?? ''} style={{ width: 64, font: 'inherit', padding: 4, background: 'var(--card)', color: 'inherit', border: '1px solid var(--line)', borderRadius: 6 }}
+                  onChange={e => { const rest = { ...(s.equipmentQty ?? {}) }; if (e.target.value === '') delete rest[eq]; else rest[eq] = Math.max(1, Math.floor(Number(e.target.value) || 1)); setS({ ...s, equipmentQty: rest }) }} />}
               </span>
             )
           })}</div>

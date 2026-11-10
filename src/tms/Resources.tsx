@@ -9,7 +9,7 @@ import type { Session } from '../shared/types'
 import { useOps } from './ops/opsStore'
 import { occupancy, workdaysFrom } from './ops/logic'
 import { useResources, isOnline } from './resources/registry'
-import { unitsFor } from './resources/stock'
+import { bookedBySession, unitsFor } from './resources/stock'
 import ManageResources from './resources/ManageResources'
 import { ResolveClashModal } from './ops/ResolveClash'
 import './ops/ops.css'
@@ -57,12 +57,13 @@ export default function Resources() {
     return { i, pct, booked: avail.filter(x => busy.has(x)).length, avail: avail.length, off: horizon.length - avail.length }
   })
   const occ = venues.map(v => ({ v, pct: occupancy(horizon, busyDays(s => s.venue === v)) }))
+  const bookedNow = bookedBySession(d.enrolments)
   const eq = equipment.map(e => {
     const b = busyDays(s => s.equipment.includes(e))
     const inUseToday = b.has(today())
     const next = days.find(x => x >= today() && b.has(x))
     const stock = registryEq.find(r => r.name === e)?.quantity ?? 0
-    const unitsToday = live.filter(s => s.start === today()).reduce((a, s) => a + unitsFor(s, e), 0)
+    const unitsToday = live.filter(s => s.start === today()).reduce((a, s) => a + unitsFor(s, e, bookedNow[s.id] ?? 0), 0)
     return { e, inUseToday, next, booked: horizon.filter(x => b.has(x)).length, stock, unitsToday }
   })
 
