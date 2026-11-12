@@ -329,6 +329,7 @@ Invoice total = amount x 1.15 (VAT) minus any credit note. Balance is zero when 
 - DSO = receivables / invoiced in trailing 90 days x 90.
 - Reminder recipient: the organisation's first contact, or the individual B2C learner. Subject "Payment reminder: invoice INV-xxxx".
 - Marking paid is bulk-capable and skips invoices that are already Paid.
+- An invoice paid through PayGate or SnapScan is marked Paid automatically when the notification arrives, matched by invoice number (see [6.5](#65-paying-through-paygate-and-snapscan-production-design)); Mark paid is then needed mainly for bank transfers. The Invoicing screen lists these payments, with an **unmatched queue** that Finance allocates by hand, and **Simulate a notification** to try wrong references and amounts.
 
 ### 4.3 Credit notes
 
@@ -448,7 +449,7 @@ Cell status logic: not required -> **N/A**. Best known expiry (platform certific
 
 ### 5.5 Invoices and statements
 
-Clients see only their organisation's invoices, a ledger (invoice debit, credit note +7 days, payment credit) with running balance, and an ageing summary.
+Clients see only their organisation's invoices, a ledger (invoice debit, credit note +7 days, payment credit) with running balance, and an ageing summary. A client can pay an invoice online (card through PayGate, SnapScan or bank transfer); the invoice number is the payment reference, so the payment lands on that invoice (see [6.5](#65-paying-through-paygate-and-snapscan-production-design)).
 
 ---
 
@@ -461,20 +462,24 @@ Public catalogue (visible to every persona): faceted filters, compare (**maximum
 ### 6.2 Checkout (B2C learners only)
 
 ```text
-  ┌───────────────┐   ┌───────────────┐   ┌───────────────────┐
-  │ 1 Choose date │──▶│ 2 Your details│──▶│ 3 Payment         │
-  │ seats left    │   │ name 3+ chars │   │ Card or EFT       │
-  └───────────────┘   └───────────────┘   └─────────┬─────────┘
-                                                    ▼
-                                    Fake payment (~650 ms per phase,
-                                    always succeeds)
-                                                    │
-        ┌──────────────┬──────────────┬─────────────┼───────────────┐
-        ▼              ▼              ▼             ▼               ▼
-  Receipt RCT-5xxx  Enrolment     Confirmation   Activity log   Coupon use
-  (4th step)        payer = self  email → sent   "X booked      logged
-                    Booked, 0%    log            course"        (if applied)
+  ┌───────────────┐   ┌───────────────┐   ┌────────────────────────────┐
+  │ 1 Choose date │──▶│ 2 Your details│──▶│ 3 Payment: card (PayGate), │
+  │ seats left    │   │ name 3+ chars │   │ SnapScan QR or EFT         │
+  └───────────────┘   └───────────────┘   └─────────────┬──────────────┘
+                                                        ▼
+                         Invoice raised first: its number (INV-0048) is the payment reference
+                                                        ▼
+                         Simulated notification (~650 ms per phase, always succeeds)
+                         carries the invoice number and is matched to the invoice
+                                                        │
+      ┌───────────────┬──────────────┬─────────────┬────┴────────┬──────────────┬─────────────┐
+      ▼               ▼              ▼             ▼             ▼              ▼
+  Invoice paid   Receipt RCT-5xxx  Enrolment    Confirmation  Activity log   Coupon use
+  + payment      (shows the        payer = self email → sent   "X booked      logged
+  record         invoice number)   Booked, 0%   log           course"        (if applied)
 ```
+
+The learner sees the invoice number on the payment step ("this is your payment reference"), and again on the receipt with the processor and transaction id. Card shows a PayGate payment page stand-in; SnapScan shows a QR code stand-in carrying the invoice number and amount; EFT shows bank details with the invoice number as the reference. The same three methods are used for Academies (one invoice per course) and for a client paying an invoice from the portal (see [6.5](#65-paying-through-paygate-and-snapscan-production-design)).
 
 Pricing (`priceOrder`): the coupon discount comes off the **ex-VAT** price, then 15% VAT is added to the discounted net.
 
@@ -485,6 +490,8 @@ Pricing (`priceOrder`): the coupon discount comes off the **ex-VAT** price, then
 | STUDENT5 | 5% |
 
 Academies (cohort bundles) get a fixed **10% bundle discount** on the sum of courses. Certificate renewals reuse checkout and carry a `renewal` reference.
+
+*Demo only: payment is simulated here. The production design (PayGate and SnapScan, with the invoice number as the payment reference) is in [6.5](#65-paying-through-paygate-and-snapscan-production-design).*
 
 ### 6.3 Change or cancel a booking
 
@@ -525,6 +532,64 @@ Refund policy (`refundPct`): **more than 7 days before start = 100%; 0-7 days = 
 | Academies | View cohort, **Register interest** (toggle) or **Enrol now** (buys only courses not already held) | 10% bundle discount; enrolment tracked per learner with progress across the bundle. |
 | Mentoring | Pick mentor -> pick an open 45-minute slot -> enter goals -> confirm | Slot unavailable if already taken for that mentor/time; at least one goal of 5+ characters. Session starts `Requested`; learner ticks goals and rates the session afterwards. |
 | Certifications | Expiry timeline; **Renew** goes to checkout | Status: Expired; under 60 days = red; under 180 days = "Renew soon"; else Valid; no expiry = "Does not expire". |
+
+### 6.5 Paying through PayGate and SnapScan (production design)
+
+The demo simulates this flow end to end (see 6.2 and limitation 8), including the matching rules below. In production, payments are taken by **PayGate** (cards, on a hosted payment page) and **SnapScan** (QR code or app). They share one rule: **the invoice number is the payment reference**. It goes out with every payment request and comes back with the notification, so the platform always knows which invoice, and so which person or company, a payment belongs to. The technical design is in the Architecture document (D11, D8).
+
+```text
+  Invoice raised (INV-0042)       B2C: at booking, before payment
+        │                         B2B: the existing invoice, "Pay online"
+        ▼
+  Payment page: invoice number and amount
+        │
+        ├── Card ──▶ PayGate hosted page     reference = INV-0042
+        └── QR   ──▶ SnapScan app            reference = INV-0042
+                              │
+                              ▼
+  Notification to the platform: invoice number, amount,
+  transaction id, signature
+                              │
+                              ▼
+  Signature valid and invoice number known? ──no──▶ Unmatched queue + alert to Finance
+                              │ yes
+                              ▼
+  Amount equals the balance? ──no──▶ part payment / excess / duplicate: flagged for Finance
+                              │ yes
+                              ▼
+  Transaction id already applied? ──yes──▶ ignore (safe repeat)
+                              │ new
+                              ▼
+  Record payment against the invoice (who, what, when, how); settle invoice;
+  confirm booking
+        ├──▶ receipt and email quoting the invoice number
+        └──▶ payment.settled → Workbook under the same invoice number
+```
+
+| Topic | Rule |
+|---|---|
+| Reference sent | The invoice number (for example INV-0042), in PayGate's reference field and SnapScan's merchant-reference field. Field names and length limits are to be confirmed with each provider. |
+| Invoice before payment | B2C: the invoice is raised at booking, before the learner pays, with payer type "self". B2B: the existing invoice is paid from the client's invoice screen. Finance can also send a pay link or QR code for any open invoice. |
+| Who paid what | The notification returns the invoice number; the invoice knows its organisation (B2B) or learner (B2C). The payment is stored against the invoice with the processor, its transaction id, the amount, method and time. |
+| One application only | The processor plus its transaction id is the idempotency key. A repeated notification changes nothing. |
+| Retries | A payer can try again; each try is a separate attempt on the same invoice. If a processor rejects a repeated reference, a short attempt suffix is added and stripped when matching (to confirm). |
+| Methods | Card through PayGate's hosted page (card details never reach the platform). SnapScan by QR code or link scanned in the SnapScan app. Bank transfer (EFT) quotes the invoice number as the bank reference and is confirmed by Finance through Workbook; whether a processor will also carry EFT is to be confirmed. |
+| Workbook | A settled payment is posted to Workbook under the same invoice number, once the invoice itself has synced. |
+| Reconciliation | Each day the processors' settlement reports are compared with the platform's payments by invoice number; each night counts and totals are compared with Workbook. Differences are recorded. |
+
+What happens to each notification:
+
+| Notification | Result |
+|---|---|
+| Valid, invoice found, amount equals the balance | Payment recorded, invoice settled, booking confirmed (B2C), event sent to Workbook. |
+| Valid, amount is less than the balance | Recorded as a part payment; the invoice stays open with the new balance. |
+| Valid, amount is more than the balance | Invoice settled; the excess is flagged for Finance to refund or credit. |
+| Valid, invoice already paid | Recorded and flagged as a duplicate payment for refund. |
+| Invoice number missing, unknown or altered | Held in the unmatched queue; alert to Finance; nothing is settled until a person allocates it. |
+| Signature or checksum invalid | Rejected with an error; alert raised. |
+| Same transaction id again | Ignored: no change. |
+
+Open with Finance: B2C invoices are raised at booking so their number can be the reference, so abandoned bookings need a rule (for example void with a credit note, keeping the tax-invoice sequence free of gaps), and it must be decided whether unpaid B2C invoices go to Workbook at once or only when paid.
 
 ---
 
@@ -814,7 +879,7 @@ Not a gap after review: client booking requests do carry through to quoting. The
 ### Remaining limitations (by design for a frontend-only demo)
 
 7. **Single-owner defaults.** Client-portal leads are owned by staff `s1`; "All access" borrows fixed identities (Zanele, Marcus, Ayesha/Cape Freight, Naledi).
-8. **Payment is a simulation.** Card and EFT always succeed; EFT is "I have paid". Refund payments are logged, not paid. B2C checkout still produces a receipt, not an invoice.
+8. **Payment is a simulation.** PayGate and SnapScan are mocked: card, SnapScan and EFT always succeed after a short delay, and the notification is generated in the browser. The rules around it are real in the demo: the invoice is raised before payment, its number is the reference, notifications are matched to invoices, and part payments, overpayments, duplicates, unknown references and invalid signatures are handled (6.5). Refund payments are logged, not paid.
 9. **Mocked integrations:** emails (preview and sent log only), Workbook (status flags and attempt log), Microsoft Forms (see 12), SCORM and video, AI summary, client single sign-on, online quote signature beyond a typed name, printing (browser print dialog).
 10. **Invented history:** revenue older than the seed, cost ratios, campaign delivery stats, leaderboard peers, streak history and recruiter ROI history.
 11. **Delivery is prompted, not automated.** Accepting a quote creates tasks, but a person still schedules the sessions and enrols the learners.
@@ -827,6 +892,7 @@ Not a gap after review: client booking requests do carry through to quoting. The
 | Area | Rule | Value |
 |---|---|---|
 | Tax | VAT | 15% |
+| Payment | Reference sent to PayGate and SnapScan | The invoice number |
 | Pipeline | Stage probabilities | Enquiry 10, Needs 30, Quoted 60, Won 100, Lost 0 |
 | Pipeline | Stage age warning / bad | over 14 / over 30 days |
 | Quotes | Default validity | 30 days; warning at 7 days or fewer |

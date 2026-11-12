@@ -59,7 +59,7 @@ npm test           # unit, ringfencing and render-every-screen tests
 - Longer-range charts (12-month revenue trends, ROI history) combine your real seed invoices with invented history, because the seed only spans about four months. Delivery stats on campaigns, reviews, leaderboard colleagues and streak history are invented and deterministic.
 - Extra per-area data (opportunity tasks, quote versions, notes, message threads, booking requests and so on) lives in each area's own store rather than in the shared data types.
 - Prices show ex VAT in the catalogue and quotes; checkout and receipts add 15% VAT. Costs in profitability reports are illustrative.
-- Mocked: payment (always succeeds after a short delay), emails (preview only), SCORM and video (generated mock content), AI summary (canned text), single sign-on and online quote acceptance (R2 notes only), printing (uses the browser's print dialog).
+- Mocked: payment (PayGate card, SnapScan QR and EFT are simulated and always succeed after a short delay, but the invoice-number reference and matching rules are real), emails (preview only), SCORM and video (generated mock content), AI summary (canned text), single sign-on and online quote acceptance (R2 notes only), printing (uses the browser's print dialog).
 
 ## Verification
 
