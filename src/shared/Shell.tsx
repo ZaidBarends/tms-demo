@@ -19,6 +19,9 @@ export default function Shell() {
   const nav = useNavigate()
   const loc = useLocation()
   const [navOpen, setNavOpen] = useState(false)
+  const [navHidden, setNavHidden] = useState(false)
+  // On a narrow screen the menu slides over the page; on a wide one it collapses to give the page the full width.
+  const toggleNav = () => { if (window.matchMedia('(max-width: 980px)').matches) setNavOpen(o => !o); else setNavHidden(h => !h) }
   const [confirmReset, setConfirmReset] = useState(false)
   const [palette, setPalette] = useState(false)
   const [help, setHelp] = useState(false)
@@ -43,10 +46,10 @@ export default function Shell() {
   const color = ROLE_COLOR[persona]
 
   return (
-    <div className="app">
+    <div className={`app${navHidden ? ' nav-hidden' : ''}`}>
       <div className="ribbon" role="note">Demo with invented data</div>
       <header className="topbar">
-        <Button className="nav-toggle" appearance="subtle" icon={<NavigationRegular />} aria-label="Toggle navigation" onClick={() => setNavOpen(o => !o)} />
+        <Button className="nav-toggle" appearance="subtle" icon={<NavigationRegular />} aria-label="Show or hide the menu" aria-expanded={navOpen || !navHidden} aria-controls="main-nav" onClick={toggleNav} />
         <Link to={def.home} className="brand" aria-label="Home"><img className="brand-logo" src={logoUrl} alt="Zimele Technologies" /> <span className="brand-name">Learning Platform</span></Link>
         <Button className="search-btn" appearance="outline" icon={<SearchRegular />} onClick={() => setPalette(true)} aria-label="Search and jump to anything (Ctrl K)">
           <span className="search-text">Jump to…</span><kbd>Ctrl K</kbd>
@@ -84,7 +87,8 @@ export default function Shell() {
       )}
 
       <div className="body">
-        <nav className={`sidenav ${navOpen ? 'open' : ''}`} aria-label="Main navigation">
+        {navOpen && <div className="nav-backdrop" onClick={() => setNavOpen(false)} aria-hidden />}
+        <nav id="main-nav" className={`sidenav ${navOpen ? 'open' : ''}`} aria-label="Main navigation">
           <div className="whoami" style={{ borderLeft: `4px solid ${color}` }}>
             <span className="avatar" aria-hidden style={{ background: color }}>{persona === 'all' ? 'A' : def.name[0]}</span>
             <div><b>{def.name}</b><div className="muted small">{persona === 'all' ? def.sub : `${ROLE_LABEL[persona]}, ${def.sub}`}</div></div>
