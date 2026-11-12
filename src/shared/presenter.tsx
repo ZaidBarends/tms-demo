@@ -9,6 +9,7 @@ import { useStore } from './store'
 import { TOURS, Tour } from './tours'
 import { daysBetween, fmtDate, today } from './format'
 import { clashes, invTotal } from './calc'
+import { useMoney } from '../tms/money/store'
 import { money } from './format'
 
 /* ---------------- tour state ---------------- */
@@ -181,6 +182,7 @@ export function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (o: 
 interface Note { id: string; tone: 'danger' | 'warning' | 'info' | 'success'; text: string; to: string }
 function useNotes(): Note[] {
   const d = useStore(s => s.data)
+  const payments = useMoney(s => s.payments)
   const persona = useStore(s => s.persona)
   return useMemo(() => {
     const n: Note[] = []
@@ -188,20 +190,22 @@ function useNotes(): Note[] {
     const learnerId = d.learners.find(l => l.name === ({ internal: 'Sipho Khumalo', blearner: 'Johan Botha' } as Record<string, string>)[persona] || l.name === 'Zanele Ndlovu')?.id
     const overdue = d.invoices.filter(i => i.status === 'Overdue')
     const failed = d.invoices.filter(i => i.wb === 'Failed')
+    const stuck = payments.filter(p => !p.dismissed && ['Unmatched', 'Rejected', 'Duplicate', 'Overpaid'].includes(p.status)).length
+    if ((persona === 'admin' || persona === 'finance' || persona === 'all') && stuck) n.push({ id: 'up', tone: 'danger', text: `${stuck} payment${stuck > 1 ? 's' : ''} need${stuck > 1 ? '' : 's'} matching to an invoice`, to: '/invoicing?focus=payments' })
     if (persona === 'admin' || persona === 'all') {
-      if (overdue.length) n.push({ id: 'od', tone: 'danger', text: `${overdue.length} overdue invoices (${money(overdue.reduce((a, i) => a + invTotal(i), 0))})`, to: '/invoicing' })
-      if (failed.length) n.push({ id: 'wb', tone: 'danger', text: `${failed.length} invoice failed to sync to Workbook`, to: '/workbook' })
+      if (overdue.length) n.push({ id: 'od', tone: 'danger', text: `${overdue.length} overdue invoices (${money(overdue.reduce((a, i) => a + invTotal(i), 0))})`, to: '/invoicing?status=Overdue' })
+      if (failed.length) n.push({ id: 'wb', tone: 'danger', text: `${failed.length} invoice failed to sync to Workbook`, to: '/workbook?status=Failed' })
       const c = Object.keys(clashes(d)).length
-      if (c) n.push({ id: 'cl', tone: 'warning', text: `${c} sessions are in a resource clash`, to: '/resources' })
+      if (c) n.push({ id: 'cl', tone: 'warning', text: `${c} sessions are in a resource clash`, to: '/resources?focus=clashes' })
       const pend = d.recruiters.filter(r => !r.approved).length
-      if (pend) n.push({ id: 'rc', tone: 'info', text: `${pend} recruiter awaiting approval`, to: '/talent/admin' })
+      if (pend) n.push({ id: 'rc', tone: 'info', text: `${pend} recruiter awaiting approval`, to: '/talent/admin?tab=approvals&focus=approvals' })
       const sent = d.quotes.filter(q => q.status === 'Sent').length
-      if (sent) n.push({ id: 'qs', tone: 'info', text: `${sent} quotes sent and waiting for a response`, to: '/quotes' })
+      if (sent) n.push({ id: 'qs', tone: 'info', text: `${sent} quotes sent and waiting for a response`, to: '/quotes?status=Sent' })
     }
     if (persona === 'finance') {
-      if (overdue.length) n.push({ id: 'od', tone: 'danger', text: `${overdue.length} overdue invoices to chase`, to: '/invoicing' })
-      if (failed.length) n.push({ id: 'wb', tone: 'danger', text: `${failed[0].number} failed to sync: ${failed[0].wbError}`, to: '/workbook' })
-      n.push({ id: 'pd', tone: 'info', text: `${d.invoices.filter(i => i.wb === 'Pending').length} records pending sync`, to: '/workbook' })
+      if (overdue.length) n.push({ id: 'od', tone: 'danger', text: `${overdue.length} overdue invoices to chase`, to: '/invoicing?status=Overdue' })
+      if (failed.length) n.push({ id: 'wb', tone: 'danger', text: `${failed[0].number} failed to sync: ${failed[0].wbError}`, to: '/workbook?status=Failed' })
+      n.push({ id: 'pd', tone: 'info', text: `${d.invoices.filter(i => i.wb === 'Pending').length} records pending sync`, to: '/workbook?status=Pending' })
     }
     if (persona === 'instructor') {
       const mine = d.sessions.filter(s => s.instructorId === 's3' && s.start >= now).sort((a, b) => a.start.localeCompare(b.start))
@@ -219,7 +223,7 @@ function useNotes(): Note[] {
     }
     if (persona === 'client') {
       const sent = d.quotes.filter(q => q.orgId === 'o1' && q.status === 'Sent').length
-      if (sent) n.push({ id: 'cq', tone: 'info', text: `${sent} quote awaiting your acceptance`, to: '/quotes' })
+      if (sent) n.push({ id: 'cq', tone: 'info', text: `${sent} quote awaiting your acceptance`, to: '/quotes?status=Sent' })
       const due = d.invoices.filter(i => i.orgId === 'o1' && i.status !== 'Paid')
       if (due.length) n.push({ id: 'ci', tone: due.some(i => i.status === 'Overdue') ? 'danger' : 'warning', text: `${due.length} unpaid invoices`, to: '/client/invoices' })
     }
@@ -228,7 +232,7 @@ function useNotes(): Note[] {
       d.intros.filter(i => i.recruiterId === 'r1' && i.status === 'Pending').forEach(i => n.push({ id: 'rp' + i.id, tone: 'info', text: `Waiting for ${d.talent.find(t => t.learnerId === i.learnerId)?.code} to respond`, to: '/talent/introductions' }))
     }
     return n
-  }, [d, persona])
+  }, [d, persona, payments])
 }
 
 export function Bell() {

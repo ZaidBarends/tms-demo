@@ -1,5 +1,5 @@
-import { Fragment, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Fragment, useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Button, Tab, TabList } from '@fluentui/react-components'
 import { useStore, useCtx } from '../shared/store'
 import { PageHeader, Card, Stat } from '../shared/ui'
@@ -45,6 +45,14 @@ export default function Resources() {
     ...equipment.map(e => ({ label: e, group: 'Equipment' as const, match: (s: Session) => s.equipment.includes(e) })),
   ].filter(r => type === 'all' || r.group === type)
   const clashCount = new Set(Object.keys(cl)).size
+  const [params] = useSearchParams()
+  const focusClashes = params.get('focus') === 'clashes'
+  useEffect(() => {
+    if (!focusClashes) return
+    setTab('plan')
+    const t = setTimeout(() => { document.getElementById('clash-callout')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); if (clashCount > 0) setResolve(true) }, 250)
+    return () => clearTimeout(t)
+  }, [focusClashes]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const live = d.sessions.filter(s => s.status !== 'Cancelled')
   const horizon = workdaysFrom(today(), 28)
@@ -76,7 +84,7 @@ export default function Resources() {
       {canManage && <TabList selectedValue={tab} onTabSelect={(_, x) => setTab(x.value as 'plan' | 'manage')} style={{ marginBottom: 16 }}><Tab value="plan">Calendar and load</Tab><Tab value="manage">Manage resources</Tab></TabList>}
       {tab === 'manage' && canManage && <ManageResources />}
       {(tab === 'plan' || !canManage) && <>
-      {clashCount > 0 && <div className="callout" role="alert" style={{ marginBottom: 16 }}>⚠ {clashCount} sessions are involved in resource clashes across the whole schedule. Red cells show them. <Button size="small" appearance="transparent" onClick={() => setResolve(true)}>Open the resolve assistant</Button></div>}
+      {clashCount > 0 && <div id="clash-callout" className={focusClashes ? 'focus-pulse callout' : 'callout'} role="alert" style={{ marginBottom: 16, scrollMarginTop: 'calc(var(--stick-top, 72px) + var(--head-h, 0px) + 12px)' }}>⚠ {clashCount} sessions are involved in resource clashes across the whole schedule. Red cells show them. <Button size="small" appearance="transparent" onClick={() => setResolve(true)}>Open the resolve assistant</Button></div>}
       <div className="grid c4" style={{ marginBottom: 16 }}>
         <Stat label="Sessions in clash" value={clashCount} hint="Whole schedule" />
         <Stat label="Avg instructor load" value={`${Math.round(util.reduce((a, x) => a + x.pct, 0) / Math.max(1, util.length))}%`} hint="Next 4 weeks of working days" />

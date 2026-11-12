@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button, Checkbox, Input, Select } from '@fluentui/react-components'
 import { useStore, useCtx, orgName } from '../../shared/store'
 import { PageHeader, Card, EmptyState, Status, Stat, ReleaseBadge } from '../../shared/ui'
@@ -25,7 +25,9 @@ export function QuoteList() {
   const { persona, orgId } = useCtx()
   const nav = useNavigate()
   const isClient = persona === 'client'
-  const [tab, setTab] = useState<typeof TABS[number]>('All')
+  const [params] = useSearchParams()
+  const wanted = TABS.find(t => t === params.get('status'))
+  const [tab, setTab] = useState<typeof TABS[number]>(wanted && !(isClient && wanted === 'Draft') ? wanted : 'All')
   const [q, setQ] = useState('')
   const [client, setClient] = useState('')
   const [sort, setSort] = useState('issued-desc')
