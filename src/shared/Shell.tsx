@@ -5,7 +5,7 @@ import {
   Button, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, MenuDivider, Switch, MessageBar, MessageBarBody, MessageBarActions,
   Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent, DialogActions, Tooltip,
 } from '@fluentui/react-components'
-import { ArrowResetRegular, MapRegular, NavigationRegular, PersonRegular, PlayRegular, SearchRegular, WeatherMoonRegular, WeatherSunnyRegular } from '@fluentui/react-icons'
+import { ArrowResetRegular, DocumentRegular, MapRegular, NavigationRegular, PersonRegular, PlayRegular, SearchRegular, WeatherMoonRegular, WeatherSunnyRegular } from '@fluentui/react-icons'
 import { AREAS, PERSONAS, navFor, personaDef, ROLE_LABEL } from './access'
 import { useStore } from './store'
 import { ReleaseBadge } from './ui'
@@ -72,6 +72,7 @@ export default function Shell() {
           </MenuPopover>
         </Menu>
         <Button as="a" href="#/demo-map" icon={<MapRegular />}>Demo map</Button>
+        <Button as="a" href="docs/architecture.html" target="_blank" rel="noopener" icon={<DocumentRegular />}>Architecture</Button>
         <Tooltip content="Guided tours" relationship="label"><Button appearance={tourActive ? 'primary' : 'subtle'} icon={<PlayRegular />} onClick={() => setTourMenu(true)} aria-label="Guided tours" /></Tooltip>
         <Switch label="Access explainer" checked={explainer} onChange={toggleExplainer} />
         <Bell />
