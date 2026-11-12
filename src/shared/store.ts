@@ -29,7 +29,7 @@ interface State {
   setAttended: (enrolId: string, v: boolean) => void
   setResult: (enrolId: string, v: number | undefined) => void
   issueCert: (enrolId: string) => void
-  checkout: (learnerId: string, courseId: string, sessionId: string | undefined, method: 'Card' | 'EFT') => string
+  checkout: (learnerId: string, courseId: string, sessionId: string | undefined, method: 'Card' | 'EFT' | 'SnapScan') => string
   setProgress: (enrolId: string, progress: number, step: number) => void
   completeCourse: (enrolId: string) => void
   setOptIn: (learnerId: string, v: boolean) => void

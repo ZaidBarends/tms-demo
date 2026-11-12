@@ -12,7 +12,7 @@ export const TOURS: Tour[] = [
       { persona: 'admin', path: '/opportunities', title: 'Move a deal through the pipeline', text: 'Drag a card between stages, or open one for its detail panel. Moving a card is logged in the activity feed on the dashboard.' },
       { persona: 'admin', path: '/quotes/new', title: 'Build a quote', text: 'Add course lines, a discount, venue and instructor. The total is always subtotal less discount plus 15% VAT, and updates as you type.' },
       { persona: 'client', path: '/quotes', title: 'The client accepts online', text: 'Ayesha at Cape Freight sees only her own organisation’s quotes (never drafts) and gets an Accept button.' },
-      { persona: 'finance', path: '/invoicing', title: 'Finance raises and tracks invoices', text: 'Pieter sees invoices, credit notes and payments received. Only Administrator and Finance can open money screens.' },
+      { persona: 'finance', path: '/invoicing', title: 'Finance raises and tracks invoices', text: 'Pieter sees invoices, credit notes and the payments reported by PayGate, SnapScan and the bank, each matched to an invoice by its number. A payment whose reference matches no invoice waits in the list for him to allocate. Only Administrator and Finance can open money screens.' },
       { persona: 'finance', path: '/workbook', title: 'Sync to the accounting system', text: 'INV-0042 failed with “Customer not found in Workbook”. Press Resend and watch it turn Synced.' },
     ],
   },
@@ -21,7 +21,7 @@ export const TOURS: Tour[] = [
     blurb: 'Browse, buy, learn and earn a certificate as Zanele.',
     steps: [
       { persona: 'b2c', path: '/catalogue', title: 'The public catalogue', text: 'Anyone can search and filter courses and see dates and prices.' },
-      { persona: 'b2c', path: '/checkout', title: 'Checkout with a fake payment', text: 'Card or EFT, always succeeds after a short delay, then a receipt and a confirmation email preview. Nothing is charged or sent.' },
+      { persona: 'b2c', path: '/checkout', title: 'Pay with PayGate, SnapScan or EFT', text: 'The invoice is raised first and its number is the payment reference. Pay by card (PayGate), SnapScan QR or bank transfer: the notification comes back with the invoice number and is matched, then a receipt and a confirmation email preview appear. All simulated: nothing is charged or sent.' },
       { persona: 'b2c', path: '/my-learning', title: 'The course appears in My learning', text: 'Your new booking sits alongside progress, deadlines and certificates.' },
       { persona: 'b2c', path: '/learn', title: 'Take the course', text: 'Step through the lesson slides, the video placeholder and the short quiz. Passing issues a certificate.' },
       { persona: 'b2c', path: '/my-bookings', title: 'Bookings, receipts and certificates', text: 'Your receipt and certificate are now listed here.' },
@@ -109,7 +109,7 @@ export const TOURS: Tour[] = [
     blurb: 'Overdue invoices, reminders, credit notes and the accounting sync.',
     steps: [
       { persona: 'finance', path: '/finance/dashboard', title: 'Cash position', text: 'Pieter sees ageing buckets (Current, 1-30, 31-60, 61+), the biggest debtors and days sales outstanding.' },
-      { persona: 'finance', path: '/invoicing', title: 'Remind and mark paid', text: 'Select overdue invoices and send reminders, which go to the client’s first contact and the sent log. Marking paid is bulk-capable and queues the payment for Workbook.' },
+      { persona: 'finance', path: '/invoicing', title: 'Remind and mark paid', text: 'Select overdue invoices and send reminders, which go to the client’s first contact and the sent log. Marking paid is bulk-capable and queues the payment for Workbook. Payments through PayGate and SnapScan are marked paid by themselves when the notification arrives.' },
       { persona: 'finance', path: '/invoicing', title: 'Issue a credit note', text: 'Open an invoice and issue a credit note. The amount cannot exceed the balance and a reason is required. If the invoice had synced, it flips back to Pending to be re-synced.' },
       { persona: 'finance', path: '/workbook', title: 'Fix a failed sync', text: 'Failed records raise a high-severity alert. Resend, or Resend all failed, and watch them turn Synced. Payments wait until their invoice has synced.' },
       { persona: 'finance', path: '/reports', title: 'Revenue and profitability', text: 'Compare periods, drill into profitability by category and export to CSV. History older than the seed data is synthetic.' },

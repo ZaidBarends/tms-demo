@@ -8,7 +8,7 @@ export interface BookingRequest {
 }
 export interface Reschedule { id: string; bookingKey: string; courseTitle: string; newDate: string; reason: string; created: string }
 export interface Dispute { id: string; invoice: string; reason: string; detail: string; created: string }
-export interface Payment { invoice: string; at: string; method: 'Card' | 'EFT'; ref: string }
+export interface Payment { invoice: string; at: string; method: 'Card' | 'EFT' | 'SnapScan'; ref: string }
 export interface QuoteRequest { id: string; courseId: string; people: number; notes: string; created: string; oppId?: string }
 export interface RosterPerson { id: string; name: string; email: string; dept: string; jobRole: string }
 export interface LegacyCert { person: string; cert: string; issued: string; expires: string }

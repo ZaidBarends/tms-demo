@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { applyNotification, raiseCheckoutInvoice } from '../tms/money/payments'
+import { METHOD_LABEL, PROCESSOR_OF, type PayMethod } from '../tms/money/PayPanels'
 import { Link } from 'react-router-dom'
 import { Button, DrawerBody, DrawerHeader, DrawerHeaderTitle, OverlayDrawer, Radio, RadioGroup } from '@fluentui/react-components'
 import { Dismiss24Regular } from '@fluentui/react-icons'
@@ -97,16 +99,19 @@ function EnrolModal({ academy, info, onClose, onDone }: { academy: Academy | nul
   const d = useStore(s => s.data)
   const { learnerId } = useCtx()
   const { card, recordOrder, enrolAcademy } = useB2c()
-  const [method, setMethod] = useState<'Card' | 'EFT'>('Card')
+  const [method, setMethod] = useState<PayMethod>('Card')
   if (!academy || !info) return null
   const fresh = info.cs.filter(c => !d.enrolments.some(e => e.learnerId === learnerId && e.courseId === c.id))
   const buy = () => {
     const st = useStore.getState()
     fresh.forEach(c => {
       const p = priceOrder(c.price, 10)
+      // Invoice first: its number is the payment reference sent to the processor and matched on the way back.
+      const invoice = raiseCheckoutInvoice(learnerId, c.id, p.net)
+      const note = applyNotification({ reference: invoice, amount: p.total, processor: PROCESSOR_OF[method] })
       const rid = st.checkout(learnerId, c.id, undefined, method)
-      useStore.setState(s => { const nd = structuredClone(s.data); const r = nd.receipts.find(x => x.id === rid); if (r) r.amount = p.total; return { data: nd } })
-      recordOrder(rid, { coupon: 'ACADEMY10', couponPct: 10, discount: p.discount, net: p.net, vat: p.vat, total: p.total, ref: `ACA-${academy.id.toUpperCase()}`, method })
+      useStore.setState(s => { const nd = structuredClone(s.data); const r = nd.receipts.find(x => x.id === rid); if (r) { r.amount = p.total; r.invoice = invoice } return { data: nd } })
+      recordOrder(rid, { coupon: 'ACADEMY10', couponPct: 10, discount: p.discount, net: p.net, vat: p.vat, total: p.total, ref: `ACA-${academy.id.toUpperCase()}`, method, invoice, processor: PROCESSOR_OF[method], txId: note.payment?.txId })
     })
     enrolAcademy(academy.id, learnerId)
     if (!academy.interested.includes(learnerId)) st.toggleAcademy(academy.id, learnerId)
@@ -115,15 +120,15 @@ function EnrolModal({ academy, info, onClose, onDone }: { academy: Academy | nul
   }
   const total = fresh.reduce((a, c) => a + priceOrder(c.price, 10).total, 0)
   return (
-    <Modal open onClose={onClose} title={`Enrol in ${academy.title}`} actions={<Button appearance="primary" onClick={buy}>{method === 'Card' ? 'Pay' : 'I have paid'} {money(total)}</Button>}>
+    <Modal open onClose={onClose} title={`Enrol in ${academy.title}`} actions={<Button appearance="primary" onClick={buy}>{method === 'Card' ? 'Pay with PayGate' : method === 'SnapScan' ? 'I have scanned and paid' : 'I have paid'} {money(total)}</Button>}>
       <table className="tbl"><tbody>
         {info.cs.map(c => { const have = !fresh.includes(c); return <tr key={c.id}><td>{c.title}{have && <span className="muted small"> (already yours, not charged)</span>}</td><td className="num">{have ? '–' : money(priceOrder(c.price, 10).total)}</td></tr> })}
         <tr><td><b>Total incl. VAT after 10% bundle discount</b></td><td className="num"><b>{money(total)}</b></td></tr>
       </tbody></table>
-      <RadioGroup value={method} onChange={(_, x) => setMethod(x.value as 'Card' | 'EFT')} style={{ marginTop: 12 }}>
-        <Radio value="Card" label={card ? `${card.brand} ending ${card.last4} (saved)` : 'Card'} /><Radio value="EFT" label="EFT (reference ACADEMY)" />
+      <RadioGroup value={method} onChange={(_, x) => setMethod(x.value as PayMethod)} style={{ marginTop: 12 }}>
+        <Radio value="Card" label={card ? `${METHOD_LABEL.Card}: ${card.brand} ending ${card.last4} (saved)` : METHOD_LABEL.Card} /><Radio value="SnapScan" label={METHOD_LABEL.SnapScan} /><Radio value="EFT" label={METHOD_LABEL.EFT} />
       </RadioGroup>
-      <p className="muted small">Demo payment: nothing is charged.</p>
+      <p className="muted small">Each course gets its own invoice, and the invoice number is the payment reference. Demo payment: PayGate and SnapScan are simulated and nothing is charged.</p>
     </Modal>
   )
 }

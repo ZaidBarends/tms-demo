@@ -9,6 +9,9 @@ import { fmtDate, money, today } from '../../shared/format'
 import type { Invoice } from '../../shared/types'
 import { downloadText, printWindow, toCsv } from '../../talent/download'
 import { useClient } from './clientStore'
+import { useMoney } from '../money/store'
+import { applyNotification, owing } from '../money/payments'
+import { EftPanel, METHOD_LABEL, PayGateNote, PROCESSOR_OF, SnapScanPanel, type PayMethod } from '../money/PayPanels'
 import { aging, ledger } from './clientLogic'
 import './client.css'
 
@@ -19,6 +22,7 @@ export function ClientInvoices() {
   const d = useStore(s => s.data)
   const { orgId } = useCtx()
   const C = useClient()
+  const payments = useMoney(s => s.payments)
   const org = d.orgs.find(o => o.id === orgId)!
   const now = today()
   const list = d.invoices.filter(i => i.orgId === orgId).sort((a, b) => b.issued.localeCompare(a.issued))
@@ -31,7 +35,7 @@ export function ClientInvoices() {
   const [dis, setDis] = useState<Invoice | null>(null)
   const [stmt, setStmt] = useState(false)
   const [done, setDone] = useState('')
-  const [method, setMethod] = useState<'Card' | 'EFT'>('Card')
+  const [method, setMethod] = useState<PayMethod>('Card')
   const [card, setCard] = useState({ num: '', exp: '', cvv: '' })
   const [reason, setReason] = useState(REASONS[0])
   const [detail, setDetail] = useState('')
@@ -46,10 +50,11 @@ export function ClientInvoices() {
       if (!/^\d{3}$/.test(card.cvv)) e.cvv = '3 digits'
     }
     setErr(e); if (Object.keys(e).length) return
-    const ref = C.addPayment({ invoice: pay.number, method })
-    useStore.getState().setInvoiceStatus(pay.number, 'Paid')
-    useStore.getState().log(`${org.name} paid ${pay.number} (${method}, ${ref})`)
-    setDone(`Payment received for ${pay.number}. Reference ${ref}. This is a demo: no money moved.`)
+    // The processor notifies the platform with the invoice number as the reference; the payment is matched to the invoice.
+    const amount = owing(pay, payments) || invTotal(pay)
+    const res = applyNotification({ reference: pay.number, amount, processor: PROCESSOR_OF[method] })
+    C.addPayment({ invoice: pay.number, method })
+    setDone(`${res.message} Paid through ${PROCESSOR_OF[method]}, transaction ${res.payment?.txId ?? 'n/a'}, reference ${pay.number}. This is a demo: no money moved.`)
     setPay(null); setCard({ num: '', exp: '', cvv: '' })
   }
   const doDispute = () => {
@@ -108,19 +113,22 @@ export function ClientInvoices() {
         )}
       </Card>
 
-      <Modal open={!!pay} onClose={() => setPay(null)} title={`Pay ${pay?.number ?? ''}`} actions={<Button appearance="primary" onClick={doPay}>Pay {pay ? money(invTotal(pay)) : ''}</Button>}>
+      <Modal open={!!pay} onClose={() => setPay(null)} title={`Pay ${pay?.number ?? ''}`} actions={<Button appearance="primary" onClick={doPay}>{method === 'EFT' ? 'I have paid' : method === 'SnapScan' ? 'I have scanned and paid' : 'Pay with PayGate'} {pay ? money(owing(pay, payments) || invTotal(pay)) : ''}</Button>}>
         <div className="form">
-          <p style={{ margin: 0 }}>{pay?.description}. Amount due <b>{pay ? money(invTotal(pay)) : ''}</b> including VAT.</p>
-          <FSelect label="Method" value={method} onChange={v => setMethod(v as 'Card' | 'EFT')} options={[{ value: 'Card', label: 'Card' }, { value: 'EFT', label: 'Instant EFT' }]} />
+          <p style={{ margin: 0 }}>{pay?.description}. Amount due <b>{pay ? money(owing(pay, payments) || invTotal(pay)) : ''}</b> including VAT.</p>
+          <FSelect label="Method" value={method} onChange={v => setMethod(v as PayMethod)} options={(['Card', 'SnapScan', 'EFT'] as PayMethod[]).map(m => ({ value: m, label: METHOD_LABEL[m] }))} />
+          <div className="small muted">Payment reference: <b>{pay?.number}</b> (the invoice number). It goes with the payment and comes back with it, so the money lands on this invoice.</div>
           {method === 'Card' ? (
             <>
+              <PayGateNote />
               <FText label="Card number" value={card.num} onChange={v => setCard({ ...card, num: v })} error={err.num} placeholder="4111 1111 1111 1111" />
               <div className="form c2">
                 <FText label="Expiry" value={card.exp} onChange={v => setCard({ ...card, exp: v })} error={err.exp} placeholder="MM/YY" />
                 <FText label="CVV" value={card.cvv} onChange={v => setCard({ ...card, cvv: v })} error={err.cvv} />
               </div>
             </>
-          ) : <div className="cl-pre">You would be redirected to your bank. In this demo the payment is confirmed instantly.</div>}
+          ) : method === 'SnapScan' ? <SnapScanPanel reference={pay?.number ?? ''} amount={pay ? owing(pay, payments) || invTotal(pay) : 0} />
+            : <EftPanel reference={pay?.number ?? ''} amount={pay ? owing(pay, payments) || invTotal(pay) : 0} />}
           <span className="muted small">Mock payment screen. No card details are stored or sent anywhere.</span>
         </div>
       </Modal>

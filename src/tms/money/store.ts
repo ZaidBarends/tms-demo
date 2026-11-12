@@ -14,9 +14,21 @@ export interface Campaign {
   status: 'Sent' | 'Scheduled'; at: string; sent: number; opened: number; clicked: number; bounced: number
 }
 export interface CustomTemplate { id: string; name: string; subject: string; body: string }
+/** Who can notify the platform of a payment. Bank transfers are matched from the bank record in Workbook. */
+export type Processor = 'PayGate' | 'SnapScan' | 'Bank transfer'
+export type PaymentResult = 'Matched' | 'Part payment' | 'Overpaid' | 'Duplicate' | 'Unmatched' | 'Rejected'
+/** One payment notification. `invoice` is the reference the payer used: the invoice number. */
+export interface PaymentRecord {
+  id: string; invoice: string; processor: Processor; txId: string; amount: number; at: string
+  status: PaymentResult; payer: string; note?: string
+  /** Set when Finance has looked at a rejected, duplicate or overpaid payment and cleared it from the alerts. */
+  dismissed?: boolean
+}
 
 interface MoneyState {
-  events: MoneyEvent[]; attempts: WbAttempt[]; credits: CreditNote[]; views: SavedView[]; campaigns: Campaign[]; customTemplates: CustomTemplate[]
+  events: MoneyEvent[]; attempts: WbAttempt[]; credits: CreditNote[]; views: SavedView[]; campaigns: Campaign[]; customTemplates: CustomTemplate[]; payments: PaymentRecord[]
+  addPayment: (p: Omit<PaymentRecord, 'id'>) => PaymentRecord
+  updatePayment: (id: string, patch: Partial<PaymentRecord>) => void
   addEvent: (e: Omit<MoneyEvent, 'id' | 'at'> & { at?: string }) => void
   addAttempt: (a: Omit<WbAttempt, 'id' | 'at'> & { at?: string }) => void
   addCredit: (c: Omit<CreditNote, 'id' | 'at'>) => string
@@ -67,13 +79,22 @@ export function seedMoney() {
   const customTemplates: CustomTemplate[] = [
     { id: 'pay', name: 'Payment reminder', subject: 'Payment reminder: invoice {{invoice}}', body: 'Hi {{name}},\n\nOur records show invoice {{invoice}} for {{amount}} was due on {{date}} and is still open. Please arrange payment or reply if you have already paid.\n\nKind regards,\nFinance team' },
   ]
-  return { events, attempts, credits, views, campaigns, customTemplates }
+  // Payments already received, as the processors or the bank reported them (the invoice number was the reference).
+  const payments: PaymentRecord[] = d.invoices.filter(i => i.status === 'Paid' && i.paidOn).map(i => ({
+    id: `pay-${i.number}`, invoice: i.number, processor: (i.orgId ? 'Bank transfer' : 'PayGate') as Processor, txId: `SEED-${i.number.replace(/\D/g, '')}`,
+    amount: Math.round(((i.amount * 1.15) - (i.creditNote ?? 0)) * 100) / 100, at: at(i.paidOn! > now ? now : i.paidOn!, '14:00'), status: 'Matched' as PaymentResult, payer: i.orgId ? (d.orgs.find(o => o.id === i.orgId)?.name ?? '') : (d.learners.find(l => l.id === i.learnerId)?.name ?? ''),
+  }))
+  // One payment whose reference matches no invoice, so the unmatched queue has something to show.
+  payments.push({ id: 'pay-unmatched-1', invoice: 'INV-0099', processor: 'SnapScan', txId: 'SS-48213', amount: 1150, at: at(addDays(now, -1), '10:12'), status: 'Unmatched', payer: 'Unknown', note: 'Reference INV-0099 is not an invoice number' })
+  return { events, attempts, credits, views, campaigns, customTemplates, payments }
 }
 
 export const useMoney = create<MoneyState>()(
   persist(
     (set, get) => ({
       ...seedMoney(),
+      addPayment: p => { const rec = { ...p, id: uid('pay') }; set(s => ({ payments: [rec, ...s.payments] })); return rec },
+      updatePayment: (id, patch) => set(s => ({ payments: s.payments.map(p => (p.id === id ? { ...p, ...patch } : p)) })),
       addEvent: e => set(s => ({ events: [...s.events, { ...e, id: uid('ev'), at: e.at ?? new Date().toISOString() }] })),
       addAttempt: a => set(s => ({ attempts: [...s.attempts, { ...a, id: uid('wa'), at: a.at ?? new Date().toISOString() }] })),
       addCredit: c => {

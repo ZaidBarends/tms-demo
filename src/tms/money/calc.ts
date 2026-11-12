@@ -168,7 +168,7 @@ export function pipeline(opps: Opportunity[]) {
 }
 
 /* ----------------------------------------------------------------- alerts */
-export interface Alert { id: string; kind: 'invoice' | 'workbook' | 'clash' | 'fill' | 'cert'; title: string; detail: string; severity: 'high' | 'medium' | 'low'; to: string; action: string; count: number }
+export interface Alert { id: string; kind: 'invoice' | 'workbook' | 'clash' | 'fill' | 'cert' | 'payment'; title: string; detail: string; severity: 'high' | 'medium' | 'low'; to: string; action: string; count: number }
 export function buildAlerts(d: Data, now = today()): Alert[] {
   const out: Alert[] = []
   const overdue = d.invoices.filter(i => i.status === 'Overdue' || (i.status === 'Sent' && i.due < now))
@@ -179,7 +179,7 @@ export function buildAlerts(d: Data, now = today()): Alert[] {
   const clashIds = Object.keys(cl)
   if (clashIds.length) {
     const first = d.sessions.find(s => s.id === clashIds[0])
-    out.push({ id: 'clash', kind: 'clash', severity: 'medium', count: clashIds.length, title: `${clashIds.length} sessions in a resource clash`, detail: `${cl[clashIds[0]][0]}${first ? ` on ${fmtDate(first.start)}` : ''}`, to: '/resources', action: 'Resolve clash' })
+    out.push({ id: 'clash', kind: 'clash', severity: 'medium', count: clashIds.length, title: `${clashIds.length} sessions in a resource clash`, detail: `${cl[clashIds[0]][0]}${first ? ` on ${fmtDate(first.start)}` : ''}`, to: '/resources?focus=clashes', action: 'Resolve clash' })
   }
   const low = d.sessions.filter(s => s.status === 'Scheduled' && s.start >= now && s.start <= addDays(now, 21) && seatsTaken(d, s.id) / s.capacity < 0.4)
   if (low.length) out.push({ id: 'fill', kind: 'fill', severity: 'medium', count: low.length, title: `${low.length} session${low.length > 1 ? 's' : ''} under 40% full in the next 3 weeks`, detail: low.slice(0, 2).map(s => `${d.courses.find(c => c.id === s.courseId)?.title} (${seatsTaken(d, s.id)}/${s.capacity})`).join('; '), to: `/sessions/${low[0].id}`, action: 'Open session' })

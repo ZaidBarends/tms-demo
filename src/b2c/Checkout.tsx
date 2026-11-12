@@ -10,10 +10,16 @@ import { useB2c } from './b2cStore'
 import { priceOrder, type Coupon } from './pricing'
 import { OrderSummary, Stepper } from './CheckoutParts'
 import { seatsLeft, upcomingSessions } from './courseMeta'
+import { applyNotification, nextInvoiceNumber, raiseCheckoutInvoice } from '../tms/money/payments'
+import { EftPanel, METHOD_LABEL, PayGateNote, PROCESSOR_OF, SnapScanPanel, type PayMethod } from '../tms/money/PayPanels'
 import './b2c.css'
 
 const STEPS = ['Course', 'Your details', 'Payment', 'Confirmation']
-const PHASES = ['Contacting your bank', 'Verifying the payment', 'Issuing your receipt']
+const phasesFor = (m: PayMethod, ref: string) => ({
+  Card: ['Sending you to the PayGate payment page', 'Waiting for PayGate to confirm', `Matching invoice ${ref}`],
+  SnapScan: ['Waiting for the SnapScan payment', 'SnapScan notification received', `Matching invoice ${ref}`],
+  EFT: ['Bank transfer received', `Matching the reference ${ref}`, 'Issuing your receipt'],
+}[m])
 
 export default function Checkout() {
   const { courseId } = useParams()
@@ -31,7 +37,8 @@ export default function Checkout() {
   const [sessionId, setSessionId] = useState(qs.get('session') ?? sessions[0]?.id ?? '')
   const [coupon, setCoupon] = useState<Coupon | null>(null)
   const [det, setDet] = useState({ name: learner?.name ?? '', email: learner?.email ?? '', phone: learner?.phone ?? '', company: '', terms: false })
-  const [method, setMethod] = useState<'Card' | 'EFT'>('Card')
+  const [method, setMethod] = useState<PayMethod>('Card')
+  const [invoiceNo, setInvoiceNo] = useState('')
   const [useSaved, setUseSaved] = useState(!!card)
   const [f, setF] = useState({ name: learner?.name ?? '', number: '', expiry: '', cvv: '', save: false })
   const [err, setErr] = useState<Record<string, string>>({})
@@ -40,13 +47,16 @@ export default function Checkout() {
   const [email, setEmail] = useState(false)
   const [orderRef] = useState(() => `ORD-${Math.floor(10000 + Math.random() * 89999)}`)
 
+  const phases = phasesFor(method, invoiceNo || '...')
   useEffect(() => {
     if (phase < 0 || !course) return
-    if (phase < PHASES.length) { const t = setTimeout(() => setPhase(phase + 1), 650); return () => clearTimeout(t) }
+    if (phase < phases.length) { const t = setTimeout(() => setPhase(phase + 1), 650); return () => clearTimeout(t) }
     const priced = priceOrder(course.price, coupon?.pct ?? 0)
+    // The processor notifies the platform with the invoice number as the reference; the payment is matched to the invoice.
+    const note = applyNotification({ reference: invoiceNo, amount: priced.total, processor: PROCESSOR_OF[method] })
     const rid = checkout(learnerId, course.id, sessionId || undefined, method)
-    useStore.setState(s => { const nd = structuredClone(s.data); const r = nd.receipts.find(x => x.id === rid); if (r) r.amount = priced.total; return { data: nd } })
-    recordOrder(rid, { coupon: coupon?.code, couponPct: coupon?.pct, discount: priced.discount, net: priced.net, vat: priced.vat, total: priced.total, ref: orderRef, method, sessionId: sessionId || undefined, renewal: renew ?? undefined })
+    useStore.setState(s => { const nd = structuredClone(s.data); const r = nd.receipts.find(x => x.id === rid); if (r) { r.amount = priced.total; r.invoice = invoiceNo } return { data: nd } })
+    recordOrder(rid, { coupon: coupon?.code, couponPct: coupon?.pct, discount: priced.discount, net: priced.net, vat: priced.vat, total: priced.total, ref: orderRef, method, sessionId: sessionId || undefined, renewal: renew ?? undefined, invoice: invoiceNo, processor: PROCESSOR_OF[method], txId: note.payment?.txId })
     if (f.save && method === 'Card' && !useSaved && /^\d{13,19}$/.test(f.number.replace(/\s/g, ''))) saveCard({ brand: 'Card', last4: f.number.replace(/\s/g, '').slice(-4), name: f.name, expiry: f.expiry })
     if (coupon) useStore.getState().log(`Coupon ${coupon.code} used on ${course.title} booking`)
     setReceiptId(rid); setPhase(-1); setStep(3)
@@ -57,7 +67,7 @@ export default function Checkout() {
   const sess = d.sessions.find(s => s.id === sessionId)
   const dateLabel = sess ? `${fmtDate(sess.start)} · ${sess.venue}` : 'Online, start any time'
   const existing = d.enrolments.find(e => e.learnerId === learnerId && e.courseId === course.id && e.status !== 'Completed')
-  const ref = `${(learner?.name ?? 'LEARNER').split(' ').slice(-1)[0].toUpperCase()}-${course.code}`
+  const reference = invoiceNo || nextInvoiceNumber(d)
 
   const validate = (s: number) => {
     const e: Record<string, string> = {}
@@ -80,7 +90,7 @@ export default function Checkout() {
     setErr(e); return Object.keys(e).length === 0
   }
   const next = () => { if (validate(step)) setStep(step + 1) }
-  const pay = () => { if (validate(2)) setPhase(0) }
+  const pay = () => { if (!validate(2)) return; setInvoiceNo(raiseCheckoutInvoice(learnerId, course.id, priced.net)); setPhase(0) }
 
   if (step === 3 && receiptId) {
     const r = d.receipts.find(x => x.id === receiptId)
@@ -96,7 +106,9 @@ export default function Checkout() {
               <tr><td>Order</td><td>{order?.ref ?? orderRef}</td></tr>
               <tr><td>Course</td><td>{course.title}</td></tr>
               <tr><td>Date</td><td>{dateLabel}</td></tr>
-              <tr><td>Paid by</td><td>{r?.method === 'Card' ? (useSaved && card ? `Card ending ${card.last4} (demo)` : 'Card (demo)') : `EFT, ref ${ref} (demo)`}</td></tr>
+              <tr><td>Invoice number</td><td><b>{r?.invoice ?? order?.invoice}</b> (the payment reference)</td></tr>
+              <tr><td>Paid through</td><td>{r?.method === 'Card' ? `PayGate, card${useSaved && card ? ` ending ${card.last4}` : ''} (demo)` : r?.method === 'SnapScan' ? 'SnapScan (demo)' : 'Bank transfer (demo)'}</td></tr>
+              <tr><td>Transaction id</td><td>{order?.txId ?? 'n/a'}</td></tr>
               <tr><td>Paid on</td><td>{fmtDate(r?.date)}</td></tr>
               {order?.coupon && <tr><td>Coupon {order.coupon}</td><td>-{money(order.discount)} ex VAT</td></tr>}
               <tr><td>VAT (15%)</td><td>{money(order?.vat ?? priced.vat)}</td></tr>
@@ -121,14 +133,14 @@ export default function Checkout() {
           </Card>
         </div>
         <EmailPreview open={email} onClose={() => setEmail(false)} to={det.email} subject="Your booking is confirmed"
-          body={`Hi ${det.name.split(' ')[0]},\n\nYour place on ${course.title} is confirmed.\nDate: ${dateLabel}\nReceipt: ${receiptId} (${money(r?.amount ?? priced.total)}${order?.coupon ? `, coupon ${order.coupon} applied` : ''})\n\nKind regards,\nThe training team`} />
+          body={`Hi ${det.name.split(' ')[0]},\n\nYour place on ${course.title} is confirmed.\nDate: ${dateLabel}\nInvoice: ${r?.invoice ?? ''}\nReceipt: ${receiptId} (${money(r?.amount ?? priced.total)}${order?.coupon ? `, coupon ${order.coupon} applied` : ''})\n\nKind regards,\nThe training team`} />
       </>
     )
   }
 
   return (
     <>
-      <PageHeader id="checkout" title={renew ? 'Renew your certification' : 'Checkout'} subtitle="Demo payment: nothing is charged." />
+      <PageHeader id="checkout" title={renew ? 'Renew your certification' : 'Checkout'} subtitle="Demo payment: PayGate and SnapScan are simulated and nothing is charged." />
       <Stepper steps={STEPS} step={step} />
       {renew && <div className="callout" style={{ marginBottom: 16 }}>Renewing certificate <b>{renew}</b>. Completing this course issues a fresh certificate with a new expiry date.</div>}
       {existing && !renew && <div className="callout" role="alert" style={{ marginBottom: 16 }}>You already have this course ({existing.status.toLowerCase()}, {existing.progress}%). <Link to={`/learn/${existing.id}`}>Open it</Link> or continue to book another seat.</div>}
@@ -162,12 +174,14 @@ export default function Checkout() {
           )}
           {step === 2 && (
             <Card title="Payment">
-              <TabList selectedValue={method} onTabSelect={(_, x) => { setMethod(x.value as 'Card' | 'EFT'); setErr({}) }}>
-                <Tab value="Card">Card</Tab><Tab value="EFT">EFT</Tab>
+              <TabList selectedValue={method} onTabSelect={(_, x) => { setMethod(x.value as PayMethod); setErr({}) }}>
+                <Tab value="Card">{METHOD_LABEL.Card}</Tab><Tab value="SnapScan">{METHOD_LABEL.SnapScan}</Tab><Tab value="EFT">{METHOD_LABEL.EFT}</Tab>
               </TabList>
+              <div className="small muted" style={{ marginTop: 10 }}>Your invoice number is <b>{reference}</b>. It is sent with the payment and comes back with it, so we know who paid what.</div>
               <div className="form" style={{ marginTop: 14 }}>
                 {method === 'Card' ? (
                   <>
+                    <PayGateNote />
                     {card && (
                       <RadioGroup value={useSaved ? 'saved' : 'new'} onChange={(_, x) => { setUseSaved(x.value === 'saved'); setErr({}) }}>
                         <Radio value="saved" label={`${card.brand} ending ${card.last4} · expires ${card.expiry} (saved)`} /><Radio value="new" label="Use a different card" />
@@ -183,22 +197,14 @@ export default function Checkout() {
                         </>
                       )}
                   </>
-                ) : (
-                  <div className="callout">
-                    <b>Pay by EFT</b>
-                    <table className="tbl" style={{ marginTop: 6 }}><tbody>
-                      <tr><td>Bank</td><td>Demo Bank</td></tr><tr><td>Account</td><td>000 000 000 (cheque)</td></tr><tr><td>Branch code</td><td>000000</td></tr>
-                      <tr><td>Reference</td><td><b>{ref}</b></td></tr><tr><td>Amount</td><td><b>{money(priced.total)}</b></td></tr>
-                    </tbody></table>
-                    <div className="small" style={{ marginTop: 6 }}>Your place is held for 3 business days. In this demo, press the button below to simulate the payment arriving.</div>
-                  </div>
-                )}
+                ) : method === 'SnapScan' ? <SnapScanPanel reference={reference} amount={priced.total} />
+                  : <EftPanel reference={reference} amount={priced.total} hold="Your place is held for 3 business days. Finance confirms the payment from the bank record in Workbook, using the invoice number as the reference." />}
                 {phase >= 0 ? (
                   <div className="b2c-proc" role="status" aria-live="polite">
-                    <div className="progress"><div style={{ width: `${Math.min(100, ((phase + 1) / (PHASES.length + 1)) * 100)}%` }} /></div>
-                    <div className="small">{PHASES[Math.min(phase, PHASES.length - 1)]}…</div>
+                    <div className="progress"><div style={{ width: `${Math.min(100, ((phase + 1) / (phases.length + 1)) * 100)}%` }} /></div>
+                    <div className="small">{phases[Math.min(phase, phases.length - 1)]}…</div>
                   </div>
-                ) : <div className="row"><Button onClick={() => setStep(1)}>Back</Button><Button appearance="primary" onClick={pay}>{method === 'Card' ? 'Pay' : 'I have paid'} {money(priced.total)}</Button></div>}
+                ) : <div className="row"><Button onClick={() => setStep(1)}>Back</Button><Button appearance="primary" onClick={pay}>{method === 'Card' ? 'Pay with PayGate' : method === 'SnapScan' ? 'I have scanned and paid' : 'I have paid'} {money(priced.total)}</Button></div>}
               </div>
             </Card>
           )}

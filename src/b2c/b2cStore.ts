@@ -5,7 +5,7 @@ import { today } from '../shared/format'
 
 export interface Review { id: string; courseId: string; name: string; rating: number; text: string; date: string; mine?: boolean }
 export interface SavedCard { brand: string; last4: string; name: string; expiry: string }
-export interface OrderMeta { coupon?: string; couponPct?: number; discount: number; net: number; vat: number; total: number; ref: string; method: 'Card' | 'EFT'; sessionId?: string; renewal?: string }
+export interface OrderMeta { coupon?: string; couponPct?: number; discount: number; net: number; vat: number; total: number; ref: string; method: 'Card' | 'EFT' | 'SnapScan'; sessionId?: string; renewal?: string; invoice?: string; processor?: string; txId?: string }
 export interface BookingRequest { id: string; enrolId: string; type: 'Reschedule' | 'Cancel'; newSessionId?: string; reason: string; at: string; refundPct: number; status: 'Requested' | 'Approved' }
 export interface MentorMeta { time: string; goals: string[]; done: boolean[]; notes: string; rating?: number }
 

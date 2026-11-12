@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button, ToggleButton } from '@fluentui/react-components'
 import { useStore } from '../shared/store'
@@ -11,6 +11,7 @@ import { downloadCsv, markPaid, sendReminder } from './money/actions'
 import { useMoney } from './money/store'
 import { Kpi } from './money/ui'
 import InvoiceDrawer from './money/InvoiceDrawer'
+import PaymentsCard from './money/PaymentsCard'
 import InvoiceDoc from './money/InvoiceDoc'
 import type { Invoice } from '../shared/types'
 
@@ -30,6 +31,12 @@ export default function Invoicing() {
   const [doc, setDoc] = useState<string | null>(null)
   const [flash, setFlash] = useState('')
   const now = today()
+  const focusPayments = params.get('focus') === 'payments'
+  useEffect(() => {
+    if (!focusPayments) return
+    const t = setTimeout(() => document.getElementById('payments-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 250)
+    return () => clearTimeout(t)
+  }, [focusPayments])
 
   const val = (i: Invoice, k: SortKey): string | number => {
     switch (k) {
@@ -77,7 +84,7 @@ export default function Invoicing() {
 
   return (
     <>
-      <PageHeader id="invoicing" title="Invoicing" subtitle="Invoices, credit notes and payments received" actions={<Button onClick={exportCsv}>Export CSV</Button>} />
+      <PageHeader id="invoicing" title="Invoicing" subtitle="Invoices, credit notes and payments received through PayGate, SnapScan and the bank" actions={<Button onClick={exportCsv}>Export CSV</Button>} />
       <div className="grid c4" style={{ marginBottom: 20 }}>
         <Kpi label="Invoiced (incl. VAT)" value={money(d.invoices.reduce((a, i) => a + inclVat(i.amount), 0))} hint={`${d.invoices.length} invoices`} />
         <Kpi label="Payments received" value={money(paid.reduce((a, i) => a + invTotal(i), 0))} hint={`${paid.length} invoices paid`} />
@@ -130,6 +137,7 @@ export default function Invoicing() {
           </table></div>
         )}
       </Card>
+      <PaymentsCard onOpenInvoice={setOpen} highlight={focusPayments} />
       <div className="grid c2">
         <Card title="Credit notes">
           {credits.length === 0 ? <EmptyState title="No credit notes yet" text="Open an invoice and choose Issue credit note." /> : (

@@ -23,7 +23,7 @@ const MAPPING: [string, string, string, string][] = [
   ['Quantity / unit price', 'Lines[].Quantity / UnitPrice', 'Excl. VAT, 2 decimals', 'Required'],
   ['VAT rate (15%)', 'Lines[].VatCode = S', 'Standard rate code', 'Required'],
   ['Credit note amount', 'Adjustments[].Amount', 'Negative value, incl. VAT', 'Optional'],
-  ['Payment received', 'Receipts[].Amount / Date', 'Allocated to invoice number', 'Sent after invoice syncs'],
+  ['Payment received (PayGate, SnapScan or bank)', 'Receipts[].Amount / Date / Reference', 'Posted under the invoice number, with the processor and transaction id', 'Sent after invoice syncs'],
 ]
 
 export default function Workbook() {
@@ -54,7 +54,7 @@ export default function Workbook() {
 
   return (
     <>
-      <PageHeader id="workbook" title="Workbook sync" subtitle="Records sent to the accounting system. Nothing really syncs in this demo."
+      <PageHeader id="workbook" title="Workbook sync" subtitle="Records sent to Workbook, the finance system Deltek hosts and manages. The platform only needs its API. Nothing really syncs in this demo."
         actions={<Button appearance="primary" disabled={failed.length === 0} onClick={() => { const n = resendAllFailed(); setFlash(`${n.length} failed record(s) resent and synced.`) }}>Resend all failed ({failed.length})</Button>} />
       {failed.length > 0 && <div className="callout" role="alert" style={{ marginBottom: 16, borderLeftColor: '#c50f1f' }}>⚠ {failed.length} record failed to sync. Resend it once the issue is fixed.</div>}
       {flash && <div className="callout" role="status" style={{ marginBottom: 16 }}>{flash}</div>}

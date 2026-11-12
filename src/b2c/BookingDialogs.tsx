@@ -78,7 +78,7 @@ export function DocModal({ receipt, kind, onClose, name, company }: { receipt: R
           <tr><td>VAT (15%)</td><td className="num">{money(vat)}</td></tr>
           <tr><td><b>Total {kind === 'Receipt' ? 'paid' : 'due'}</b></td><td className="num"><b>{money(total)}</b></td></tr>
         </tbody></table>
-        <p>Paid by {receipt.method === 'Card' ? 'card' : 'EFT'} on {fmtDate(receipt.date)}. <b style={{ color: '#13a10e', border: '2px solid #13a10e', padding: '2px 8px', borderRadius: 4, marginLeft: 8 }}>PAID</b></p>
+        <p>Paid through {receipt.method === 'Card' ? 'PayGate (card)' : receipt.method === 'SnapScan' ? 'SnapScan' : 'bank transfer'}{receipt.invoice ? `, invoice ${receipt.invoice}` : ''} on {fmtDate(receipt.date)}. <b style={{ color: '#13a10e', border: '2px solid #13a10e', padding: '2px 8px', borderRadius: 4, marginLeft: 8 }}>PAID</b></p>
         <p className="small" style={{ color: '#666' }}>Demo document. Bank: Demo Bank, account 000 000 000. Thank you for learning with us.</p>
       </div>
     </Modal>

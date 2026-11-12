@@ -58,3 +58,8 @@
   .mny-print, .mny-print * { visibility: visible !important; }
   .mny-print { position: fixed; left: 0; top: 0; width: 100%; border: 0 !important; }
 }
+
+.pay-focus { border-radius: 12px; animation: pay-pulse 2.4s ease-out 1; }
+@keyframes pay-pulse { 0%, 40% { box-shadow: 0 0 0 4px #75b040; } 100% { box-shadow: 0 0 0 0 rgba(117, 176, 64, 0); } }
+
+.focus-pulse { border-radius: 12px; animation: pay-pulse 2.4s ease-out 1; }

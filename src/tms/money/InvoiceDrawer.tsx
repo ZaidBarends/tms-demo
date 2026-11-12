@@ -9,6 +9,7 @@ import { SideDrawer, Timeline } from './ui'
 import { useMoney } from './store'
 import { applyCreditNote, markPaid, reminderMessage, resendWb, sendReminder } from './actions'
 import { balanceOf, bucketOf, daysPastDue, invoiceLines, validateCredit } from './calc'
+import { owing } from './payments'
 
 const REASONS = ['Pricing error', 'Learner no-shows', 'Course cancelled', 'Duplicate billing', 'Goodwill gesture']
 
@@ -16,6 +17,7 @@ export default function InvoiceDrawer({ number, onClose, onDocument }: { number:
   const d = useStore(s => s.data)
   const events = useMoney(s => s.events)
   const attempts = useMoney(s => s.attempts)
+  const payments = useMoney(s => s.payments)
   const inv = number ? d.invoices.find(i => i.number === number) : undefined
   const [credit, setCredit] = useState(false)
   const [amount, setAmount] = useState('')
@@ -83,12 +85,21 @@ export default function InvoiceDrawer({ number, onClose, onDocument }: { number:
           <dt>VAT at 15%</dt><dd>{money(vat)}</dd>
           {inv.creditNote ? (<><dt>Credit notes</dt><dd>−{money(inv.creditNote)}</dd></>) : null}
           <dt><b>Invoice total</b></dt><dd><b>{money(invTotal(inv))}</b></dd>
-          <dt>Balance outstanding</dt><dd>{money(balanceOf(inv))}</dd>
+          <dt>Received through PayGate, SnapScan or the bank</dt><dd>{money(payments.filter(p => p.invoice === inv.number && ['Matched', 'Part payment', 'Overpaid'].includes(p.status)).reduce((a, p) => a + p.amount, 0))}</dd>
+          <dt>Balance outstanding</dt><dd>{money(inv.status === 'Paid' ? balanceOf(inv) : owing(inv, payments))}</dd>
           <dt>Aged balance</dt><dd>{inv.status === 'Paid' ? 'Settled' : `${bucketOf(inv, now)} (${late} days past due)`}</dd>
           <dt>Workbook</dt><dd><Status s={inv.wb} /></dd>
         </dl>
 
-        <h3 className="card-title">Line items</h3>
+        <h3 className="card-title">Payments received</h3>
+        {payments.filter(p => p.invoice === inv.number).length === 0 ? <p className="muted small">None yet. The invoice number, <b>{inv.number}</b>, is the reference every payer should use.</p> : (
+          <div className="tbl-wrap"><table className="tbl">
+            <thead><tr><th>Received</th><th>Through</th><th>Transaction</th><th className="num">Amount</th><th>Result</th></tr></thead>
+            <tbody>{payments.filter(p => p.invoice === inv.number).map(p => <tr key={p.id}><td>{fmtDateTime(p.at)}</td><td>{p.processor}</td><td>{p.txId}</td><td className="num">{money(p.amount)}</td><td>{p.status}</td></tr>)}</tbody>
+          </table></div>
+        )}
+
+        <h3 className="card-title" style={{ marginTop: 18 }}>Line items</h3>
         <div className="tbl-wrap"><table className="tbl">
           <thead><tr><th>Description</th><th className="num">Qty</th><th className="num">Unit</th><th className="num">Amount</th></tr></thead>
           <tbody>{lines.map((l, i) => <tr key={i}><td>{l.description}</td><td className="num">{l.qty}</td><td className="num">{money(l.unit)}</td><td className="num">{money(l.qty * l.unit)}</td></tr>)}</tbody>

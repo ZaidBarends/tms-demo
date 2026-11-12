@@ -26,7 +26,9 @@ export interface Enrolment {
   attended?: boolean; result?: number; certificateId?: string; step?: number
 }
 export interface Certificate { id: string; learnerId: string; courseId: string; issued: string; expires?: string }
-export interface Receipt { id: string; learnerId: string; courseId: string; amount: number; date: string; method: 'Card' | 'EFT'; enrolmentId: string }
+export interface Receipt { id: string; learnerId: string; courseId: string; amount: number; date: string; method: 'Card' | 'EFT' | 'SnapScan'; enrolmentId: string
+  /** Invoice number the payment was matched to (the payment reference). */
+  invoice?: string }
 
 export type Stage = 'enquiry' | 'needs' | 'quoted' | 'won' | 'lost'
 export interface Opportunity { id: string; orgId: string; title: string; value: number; stage: Stage; contact: string; notes: string; expectedClose: string }
